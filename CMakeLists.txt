@@ -19,6 +19,7 @@ ADD_SRC(UnrealFile					"inc/valunpak/ue4_bin_file.hpp"			"src/ue4_bin_file.cpp")
 ADD_SRC(BinFile						"inc/valunpak/bin_file.hpp"				"src/bin_file.cpp")
 ADD_SRC(SigFile						"inc/valunpak/sig_file.hpp"				"src/sig_file.cpp")
 ADD_SRC(PakFile						"inc/valunpak/pak_file.hpp"				"src/pak_file.cpp")
+ADD_SRC(App							"inc/valunpak/config.hpp"				"src/main.cpp")
 
 add_executable(valunpak ${VALUNPAK_SOURCES})
 set_target_properties(valunpak PROPERTIES 
