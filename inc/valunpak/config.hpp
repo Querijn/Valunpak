@@ -23,4 +23,10 @@ namespace valunpak
 	static_assert(sizeof(u16) == 2, "u16 seems to not match the correct size!");
 	static_assert(sizeof(u32) == 4, "u32 seems to not match the correct size!");
 	static_assert(sizeof(u64) == 8, "u64 seems to not match the correct size!");
+
+	template<unsigned int flag, typename T>
+	bool has_flag(T value)
+	{
+		return (value & flag) != 0;
+	}
 }
