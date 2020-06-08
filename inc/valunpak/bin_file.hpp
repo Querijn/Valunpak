@@ -16,7 +16,13 @@ namespace valunpak
 		bin_file();
 		~bin_file();
 
-		virtual bool open(std::string_view a_file_name) noexcept;
+		enum class read_mode_type
+		{
+			stream,
+			in_memory,
+		};
+
+		virtual bool open(std::string_view a_file_name, read_mode_type a_read_mode = read_mode_type::stream) noexcept;
 		bool open(const std::vector<u8>& a_data) noexcept;
 		bool open(const u8* a_data, size_t a_size) noexcept;
 

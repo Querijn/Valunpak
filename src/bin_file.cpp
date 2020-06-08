@@ -45,6 +45,15 @@ namespace valunpak
 
 	struct virtual_file_impl : base_file_impl
 	{
+		virtual_file_impl(std::string_view a_file_name)
+		{
+			std::ifstream stream(a_file_name, std::ios::binary | std::ios::ate);
+			size = stream.tellg();
+			stream.seekg(0, std::ios::beg);
+			data.resize(size);
+			stream.read((char*)data.data(), size);
+		}
+
 		virtual_file_impl(const std::vector<u8>& a_data) :
 			data(a_data), size(a_data.size())
 		{
@@ -76,13 +85,16 @@ namespace valunpak
 		size_t size;
 	};
 
-	bool bin_file::open(std::string_view a_file_name) noexcept
+	bool bin_file::open(std::string_view a_file_name, read_mode_type a_read_mode) noexcept
 	{
 		if (!fs::exists(a_file_name))
 			return false;
 
 		m_file_name = a_file_name;
-		m_impl = std::make_unique<bin_file_impl>(a_file_name); // TODO: Support multithreading
+		if (a_read_mode == read_mode_type::stream)
+			m_impl = std::make_unique<bin_file_impl>(a_file_name); // TODO: Support multithreading
+		else
+			m_impl = std::make_unique<virtual_file_impl>(a_file_name);
 		return true;
 	}
 

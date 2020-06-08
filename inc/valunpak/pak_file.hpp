@@ -84,6 +84,12 @@ namespace valunpak
 
 		struct entry
 		{
+			enum flag_type : u8
+			{
+				encrypted = 0b01,
+				deleted = 0b10,
+			};
+
 			struct header_data
 			{
 				i64 offset;
@@ -99,22 +105,27 @@ namespace valunpak
 				i64 compressed_end_offset;
 			};
 
-			u8 flags;
+			flag_type flags;
 			u32 compression_block_size;
 			std::vector<compressed_block> blocks;
-			u32 size;
+			u32 header_size;
 		};
 
 	#pragma pack(pop)
 
-		bool open(std::string_view a_file_name) noexcept override;
-		bool open(std::string_view a_file_name, const std::vector<u8>& a_key) noexcept;
+		bool open(std::string_view a_file_name, bin_file::read_mode_type a_read_mode = bin_file::read_mode_type::stream) noexcept override;
+		bool open(std::string_view a_file_name, const std::vector<u8>& a_key, bin_file::read_mode_type a_read_mode = bin_file::read_mode_type::stream) noexcept;
 		const info* get_info() const;
 
 		using entry_map = std::map<std::filesystem::path, std::unique_ptr<entry>>;
 		entry_map::const_iterator begin() const;
 		entry_map::const_iterator end() const;
 
+		pak_file::entry_map::const_iterator get_entry(std::string_view a_file_name) const;
+		void get_file_data(std::string_view a_file_name, std::vector<u8>& a_buffer) const;
+
+		std::shared_ptr<aes> get_aes() const;
+		std::filesystem::path get_mount_point() const;
 	private:
 		bool read_info();
 
@@ -122,7 +133,7 @@ namespace valunpak
 		bool read_index(const u8* a_index_buffer, size_t a_index_size);
 
 		std::unique_ptr<info> m_info = nullptr;
-		std::unique_ptr<aes> m_aes = nullptr;
+		std::shared_ptr<aes> m_aes = nullptr;
 		std::filesystem::path m_mount_point;
 		entry_map m_entries;
 
