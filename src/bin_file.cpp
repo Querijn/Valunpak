@@ -102,7 +102,7 @@ namespace valunpak
 		return true;
 	}
 	
-	bool bin_file::read_buffer(char* a_buffer, size_t a_length, size_t& a_offset)
+	bool bin_file::read_buffer(char* a_buffer, size_t a_length, size_t& a_offset) const
 	{
 		return m_impl->get_data((u8*)a_buffer, a_length, a_offset);
 	}
@@ -112,7 +112,7 @@ namespace valunpak
 		return m_impl->get_size();
 	}
 
-	bool bin_file::read_string(std::string& a_string, size_t a_size, size_t& a_offset)
+	bool bin_file::read_string(std::string& a_string, size_t a_size, size_t& a_offset) const
 	{
 		a_string.resize(a_size);
 		return read_buffer(a_string.data(), a_size, a_offset);
