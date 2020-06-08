@@ -2,6 +2,7 @@
 #include <valunpak/ue4_bin_file.hpp>
 
 #include <rijndael/rijndael.hpp>
+#include <debugbreak.h>
 
 namespace valunpak
 {
@@ -83,7 +84,7 @@ namespace valunpak
 
 		if (m_info->version >= version_type::path_hash_index)
 		{
-			__debugbreak(); // TODO: Implement
+			debug_break(); // TODO: Implement
 			if (!read_index(index_buffer.data(), index_buffer.size()))
 				return false;
 		}
@@ -116,7 +117,7 @@ namespace valunpak
 
 			if (m_info->version < pak_file::version_type::fname_based_compression_method)
 			{
-				__debugbreak(); // TODO: Test
+				debug_break(); // TODO: Test
 				if (cur_entry->header.compression_method_index == (u32)compression_flags::none)
 					cur_entry->header.compression_method_index = 0;
 				else if ((cur_entry->header.compression_method_index & (u32)compression_flags::zlib) != 0)
@@ -129,7 +130,7 @@ namespace valunpak
 
 			if (cur_entry->header.compression_method_index != 0)
 			{
-				__debugbreak(); // TODO: Test
+				debug_break(); // TODO: Test
 				// Read all compression blocks
 				u32 block_count;
 				mem_file.read(block_count, offset);
