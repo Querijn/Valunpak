@@ -121,8 +121,15 @@ namespace valunpak
 		entry_map::const_iterator begin() const;
 		entry_map::const_iterator end() const;
 
-		pak_file::entry_map::const_iterator get_entry(std::string_view a_file_name) const;
-		void get_file_data(std::string_view a_file_name, std::vector<u8>& a_buffer) const;
+		entry_map::const_iterator get_entry(std::string_view a_file_name) const;
+
+		bool get_file_data(std::string_view a_file_name, std::vector<u8>& a_buffer) const;
+		bool get_file_data(std::string_view a_file_name, u8* a_buffer, size_t a_size) const;
+		bool get_file_data(entry& a_entry, std::vector<u8>& a_buffer) const;
+		bool get_file_data(entry& a_entry, u8* a_buffer, size_t a_size) const;
+
+		size_t get_file_size(std::string_view a_file_name) const;
+		size_t get_file_size(entry& a_entry) const;
 
 		std::shared_ptr<aes> get_aes() const;
 		std::filesystem::path get_mount_point() const;

@@ -185,34 +185,84 @@ namespace valunpak
 		return m_entries.find(file_name);
 	}
 
-	void pak_file::get_file_data(std::string_view a_file_name, std::vector<u8>& a_buffer) const
+	bool pak_file::get_file_data(std::string_view a_file_name, std::vector<u8>& a_buffer) const
 	{
 		a_buffer.clear();
 		auto entry_index = get_entry(a_file_name);
 		if (entry_index == end())
-			return;
+			return false;
 
 		auto& entry = *entry_index->second;
+		size_t size = get_file_size(entry);
+		a_buffer.resize(size);
+		return get_file_data(entry, a_buffer.data(), size);
+	}
 
-		if (entry.header.compression_method_index == 0)
+	bool pak_file::get_file_data(std::string_view a_file_name, u8* a_buffer, size_t a_size) const
+	{
+		auto entry_index = get_entry(a_file_name);
+		if (entry_index == end())
+			return false;
+
+		auto& entry = *entry_index->second;
+		return get_file_data(entry, a_buffer, a_size);
+	}
+
+	bool pak_file::get_file_data(entry& a_entry, std::vector<u8>& a_buffer) const
+	{
+		a_buffer.clear();
+		size_t size = get_file_size(a_entry);
+		a_buffer.resize(size);
+		return get_file_data(a_entry, a_buffer.data(), size);
+	}
+
+	size_t pak_file::get_file_size(std::string_view a_file_name) const
+	{
+		auto entry_index = get_entry(a_file_name);
+		if (entry_index == end())
+			return false;
+
+		auto& entry = *entry_index->second;
+		return get_file_size(entry);
+	}
+
+	size_t pak_file::get_file_size(pak_file::entry& a_entry) const
+	{
+		if (a_entry.header.compression_method_index == 0)
 		{
-			size_t offset = entry.header.offset + entry.header_size;
+			if (has_flag<entry::flag_type::encrypted>(a_entry.flags) == false)
+				return a_entry.header.uncompressed_size;
 
-			if (has_flag<entry::flag_type::encrypted>(entry.flags) == false)
+			return (a_entry.header.size & 15) == 0 ? a_entry.header.size : (a_entry.header.size / 16 + 1) * 16;
+		}
+
+		debug_break(); // TODO: implement
+		return 0;
+	}
+
+	bool pak_file::get_file_data(entry& a_entry, u8* a_buffer, size_t a_size) const
+	{
+		size_t data_size = get_file_size(a_entry);
+		if (a_size < data_size)
+			return false;
+
+		if (a_entry.header.compression_method_index == 0)
+		{
+			size_t offset = a_entry.header.offset + a_entry.header_size;
+
+			if (has_flag<entry::flag_type::encrypted>(a_entry.flags) == false)
 			{
-				read_array(a_buffer, entry.header.uncompressed_size, offset);
-				return;
+				read_array(a_buffer, a_entry.header.uncompressed_size, offset);
+				return true;
 			}
 
-			size_t data_size = (entry.header.size & 15) == 0 ? entry.header.size : (entry.header.size / 16 + 1) * 16;
 			read_array(a_buffer, data_size, offset);
-			m_aes->decrypt(a_buffer.data(), data_size);
-			return;
+			m_aes->decrypt(a_buffer, data_size);
+			return true;
 		}
-		else
-		{
-			debug_break(); // TODO: implement
-		}
+
+		debug_break(); // TODO: implement
+		return false;
 	}
 
 	std::shared_ptr<aes> pak_file::get_aes() const
