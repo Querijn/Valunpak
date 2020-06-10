@@ -76,6 +76,7 @@ namespace valunpak
 		if (read(m_info_header, offset) == false)
 			return false;
 
+		// parse names
 		offset = m_info_header.name_offset;
 		for (i32 i = 0; i < m_info_header.name_count; i++)
 		{
@@ -86,16 +87,7 @@ namespace valunpak
 			m_names.push_back(name);
 		}
 
-		offset = m_info_header.name_offset;
-		for (i32 i = 0; i < m_info_header.name_count; i++)
-		{
-			std::string name;
-			if (read_fname(name, offset) == false)
-				return false;
-
-			m_names.push_back(name);
-		}
-
+		// parse imports
 		offset = m_info_header.import_offset;
 		for (i32 i = 0; i < m_info_header.import_count; i++)
 		{
@@ -109,19 +101,7 @@ namespace valunpak
 			m_imports.push_back(imp);
 		}
 
-		offset = m_info_header.import_offset;
-		for (i32 i = 0; i < m_info_header.import_count; i++)
-		{
-			package_import imp;
-			if (read_fname(imp.class_package, offset) == false ||
-				read_fname(imp.class_name, offset) == false ||
-				read(imp.outer_index, offset) == false ||
-				read_fname(imp.object_name, offset) == false)
-				return false;
-
-			m_imports.push_back(imp);
-		}
-
+		// parse exports
 		offset = m_info_header.export_offset;
 		for (i32 i = 0; i < m_info_header.export_count; i++)
 		{
