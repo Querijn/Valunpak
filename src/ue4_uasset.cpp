@@ -1,5 +1,7 @@
 #include <valunpak/ue4_uasset.hpp>
 
+#include <cstring>
+
 #include <debugbreak.h>
 
 namespace valunpak
