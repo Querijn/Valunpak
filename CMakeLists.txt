@@ -15,10 +15,15 @@ include_directories("ext" "inc" "src")
 ADD_SRC(Crypto\\AES\\Rijndael		"ext/rijndael/rijndael.hpp"				"ext/rijndael/rijndael.cpp")
 ADD_SRC(Crypto\\SHA1				"inc/valunpak/sha1.hpp"					"src/sha1.cpp")
 ADD_SRC(Crypto\\AES					"inc/valunpak/aes.hpp"					"src/aes.cpp")
-ADD_SRC(UnrealFile					"inc/valunpak/ue4_bin_file.hpp"			"src/ue4_bin_file.cpp")
+
+ADD_SRC(Unreal\\Bin					"inc/valunpak/ue4_bin_file.hpp"			"src/ue4_bin_file.cpp")
+ADD_SRC(Unreal\\Uasset				"inc/valunpak/ue4_uasset.hpp"			"src/ue4_uasset.cpp")
+
 ADD_SRC(BinFile						"inc/valunpak/bin_file.hpp"				"src/bin_file.cpp")
 ADD_SRC(SigFile						"inc/valunpak/sig_file.hpp"				"src/sig_file.cpp")
-ADD_SRC(PakFile						"inc/valunpak/pak_file.hpp"				"src/pak_file.cpp")
+ADD_SRC(Pak\\File					"inc/valunpak/pak_file.hpp"				"src/pak_file.cpp")
+ADD_SRC(Pak\\FS						"inc/valunpak/pak_filesystem.hpp"		"src/pak_filesystem.cpp")
+
 ADD_SRC(App							"inc/valunpak/config.hpp"				"src/main.cpp")
 
 add_executable(valunpak ${VALUNPAK_SOURCES})

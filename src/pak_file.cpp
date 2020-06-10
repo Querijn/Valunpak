@@ -1,4 +1,5 @@
 #include <valunpak/pak_file.hpp>
+#include <valunpak/pak_filesystem.hpp>
 #include <valunpak/ue4_bin_file.hpp>
 
 #include <rijndael/rijndael.hpp>
@@ -20,7 +21,7 @@ namespace valunpak
 
 		if (info_base.magic == pak_file::info::magic_def)
 		{
-			m_info = std::make_unique<pak_file::info>(info_base);
+			m_info = std::make_shared<pak_file::info>(info_base);
 			return true;
 		}
 
@@ -32,7 +33,7 @@ namespace valunpak
 
 		if (info_v8.magic == pak_file::info::magic_def)
 		{
-			m_info = std::make_unique<pak_file::info_v8>(info_v8);
+			m_info = std::make_shared<pak_file::info_v8>(info_v8);
 			return true;
 		}
 
@@ -44,7 +45,7 @@ namespace valunpak
 
 		if (info_v8.magic == pak_file::info::magic_def)
 		{
-			m_info = std::make_unique<pak_file::info_v9>(info_v9);
+			m_info = std::make_shared<pak_file::info_v9>(info_v9);
 			return true;
 		}
 
@@ -54,20 +55,11 @@ namespace valunpak
 
 	bool pak_file::open(std::string_view a_file_name, bin_file::read_mode_type a_read_mode) noexcept
 	{
-		m_aes = nullptr;
 		m_info = nullptr;
 		if (bin_file::open(a_file_name, a_read_mode) == false)
 			return false;
 
 		if (read_info() == false)
-			return false;
-
-		return true;
-	}
-
-	bool pak_file::open(std::string_view a_file_name, const std::vector<u8>& a_key, bin_file::read_mode_type a_read_mode) noexcept
-	{
-		if (pak_file::open(a_file_name, a_read_mode) == false)
 			return false;
 
 		if (m_info->encrypted_index == false)
@@ -79,19 +71,24 @@ namespace valunpak
 			return false;
 
 		// Setup AES
-		m_aes = std::make_shared<aes>(a_key.data());
-		m_aes->decrypt(index_buffer.data(), index_buffer.size());
+		for (auto& key : pak_filesystem::keys)
+		{
+			key->decrypt(index_buffer.data(), index_buffer.size());
+			if (m_info->version > version_type::latest)
+				continue;
 
-		if (m_info->version >= version_type::path_hash_index)
-		{
-			debug_break(); // TODO: Implement
-			if (!read_index(index_buffer.data(), index_buffer.size()))
-				return false;
-		}
-		else
-		{
-			if (read_legacy_index(index_buffer.data(), index_buffer.size()) == false)
-				return false;
+			if (m_info->version >= version_type::path_hash_index)
+			{
+				debug_break(); // TODO: Implement
+				if (!read_index(index_buffer.data(), index_buffer.size()))
+					return false;
+			}
+			else
+			{
+				if (read_legacy_index(index_buffer.data(), index_buffer.size()) == false)
+					return false;
+			}
+			return true;
 		}
 	}
 
@@ -102,6 +99,8 @@ namespace valunpak
 		size_t offset = 0;
 
 		mem_file.read_fstring_path(m_mount_point, offset);
+		fs::path root = fs::path(m_file_name).parent_path();
+		m_mount_point = fs::absolute(root / m_mount_point); // Make it an absolute path.
 
 		i32 entries; 
 		mem_file.read(entries, offset);
@@ -112,7 +111,7 @@ namespace valunpak
 			mem_file.read_fstring_path(path, offset);
 
 			auto start_offset = offset;
-			auto cur_entry = std::make_unique<entry>();
+			auto cur_entry = std::make_shared<entry>();
 			mem_file.read(cur_entry->header, offset);
 
 			if (m_info->version < pak_file::version_type::fname_based_compression_method)
@@ -198,6 +197,14 @@ namespace valunpak
 		return get_file_data(entry, a_buffer.data(), size);
 	}
 
+	bool pak_file::get_file_data(std::string_view a_file_name, bin_file* a_bin) const
+	{
+		std::vector<u8> buffer;
+		if (get_file_data(a_file_name, buffer) == false)
+			return false;
+		return a_bin ? a_bin->open(buffer) : false;
+	}
+
 	bool pak_file::get_file_data(std::string_view a_file_name, u8* a_buffer, size_t a_size) const
 	{
 		auto entry_index = get_entry(a_file_name);
@@ -208,12 +215,20 @@ namespace valunpak
 		return get_file_data(entry, a_buffer, a_size);
 	}
 
-	bool pak_file::get_file_data(entry& a_entry, std::vector<u8>& a_buffer) const
+	bool pak_file::get_file_data(const entry& a_entry, std::vector<u8>& a_buffer) const
 	{
 		a_buffer.clear();
 		size_t size = get_file_size(a_entry);
 		a_buffer.resize(size);
 		return get_file_data(a_entry, a_buffer.data(), size);
+	}
+
+	bool pak_file::get_file_data(const entry& a_entry, bin_file* a_bin) const
+	{
+		std::vector<u8> buffer;
+		if (get_file_data(a_entry, buffer) == false)
+			return false;
+		return a_bin ? a_bin->open(buffer) : false;
 	}
 
 	size_t pak_file::get_file_size(std::string_view a_file_name) const
@@ -226,7 +241,7 @@ namespace valunpak
 		return get_file_size(entry);
 	}
 
-	size_t pak_file::get_file_size(pak_file::entry& a_entry) const
+	size_t pak_file::get_file_size(const pak_file::entry& a_entry) const
 	{
 		if (a_entry.header.compression_method_index == 0)
 		{
@@ -240,7 +255,7 @@ namespace valunpak
 		return 0;
 	}
 
-	bool pak_file::get_file_data(entry& a_entry, u8* a_buffer, size_t a_size) const
+	bool pak_file::get_file_data(const entry& a_entry, u8* a_buffer, size_t a_size) const
 	{
 		size_t data_size = get_file_size(a_entry);
 		if (a_size < data_size)
@@ -257,17 +272,16 @@ namespace valunpak
 			}
 
 			read_array(a_buffer, data_size, offset);
-			m_aes->decrypt(a_buffer, data_size);
-			return true;
+			for (auto& key : pak_filesystem::keys)
+			{
+				debug_break(); // TODO: Validate and test
+				key->decrypt(a_buffer, data_size);
+				return true;
+			}
 		}
 
 		debug_break(); // TODO: implement
 		return false;
-	}
-
-	std::shared_ptr<aes> pak_file::get_aes() const
-	{
-		return m_aes;
 	}
 
 	std::filesystem::path pak_file::get_mount_point() const

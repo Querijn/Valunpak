@@ -20,6 +20,7 @@ namespace valunpak
 		static const size_t compression_method_name_length = 32;
 		static const size_t compression_method_names_count = 5;
 
+	#pragma region serialized data
 	#pragma pack(push, 1)
 		enum class version_type : u32
 		{
@@ -112,26 +113,27 @@ namespace valunpak
 		};
 
 	#pragma pack(pop)
+	#pragma endregion
 
 		bool open(std::string_view a_file_name, bin_file::read_mode_type a_read_mode = bin_file::read_mode_type::stream) noexcept override;
-		bool open(std::string_view a_file_name, const std::vector<u8>& a_key, bin_file::read_mode_type a_read_mode = bin_file::read_mode_type::stream) noexcept;
 		const info* get_info() const;
 
-		using entry_map = std::map<std::filesystem::path, std::unique_ptr<entry>>;
+		using entry_map = std::map<std::filesystem::path, std::shared_ptr<entry>>;
 		entry_map::const_iterator begin() const;
 		entry_map::const_iterator end() const;
 
 		entry_map::const_iterator get_entry(std::string_view a_file_name) const;
 
 		bool get_file_data(std::string_view a_file_name, std::vector<u8>& a_buffer) const;
+		bool get_file_data(std::string_view a_file_name, bin_file* a_bin) const;
 		bool get_file_data(std::string_view a_file_name, u8* a_buffer, size_t a_size) const;
-		bool get_file_data(entry& a_entry, std::vector<u8>& a_buffer) const;
-		bool get_file_data(entry& a_entry, u8* a_buffer, size_t a_size) const;
+		bool get_file_data(const entry& a_entry, std::vector<u8>& a_buffer) const;
+		bool get_file_data(const entry& a_entry, bin_file* a_bin) const;
+		bool get_file_data(const entry& a_entry, u8* a_buffer, size_t a_size) const;
 
 		size_t get_file_size(std::string_view a_file_name) const;
-		size_t get_file_size(entry& a_entry) const;
+		size_t get_file_size(const entry& a_entry) const;
 
-		std::shared_ptr<aes> get_aes() const;
 		std::filesystem::path get_mount_point() const;
 	private:
 		bool read_info();
@@ -139,8 +141,7 @@ namespace valunpak
 		bool read_legacy_index(const u8* a_index_buffer, size_t a_index_size);
 		bool read_index(const u8* a_index_buffer, size_t a_index_size);
 
-		std::unique_ptr<info> m_info = nullptr;
-		std::shared_ptr<aes> m_aes = nullptr;
+		std::shared_ptr<info> m_info = nullptr;
 		std::filesystem::path m_mount_point;
 		entry_map m_entries;
 

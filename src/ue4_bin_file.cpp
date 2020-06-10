@@ -6,6 +6,15 @@
 
 namespace valunpak
 {
+	bool ue4_bin_file::read_fname(std::string& a_string, size_t& a_offset)
+	{
+		if (read_fstring(a_string, a_offset) == false)
+			return false;
+
+		a_offset += 4;
+		return true;
+	}
+
 	bool ue4_bin_file::read_fstring(std::string& a_string, size_t& a_offset)
 	{
 
