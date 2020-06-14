@@ -17,7 +17,6 @@ namespace valunpak
 
 	bool ue4_bin_file::read_fstring(std::string& a_string, size_t& a_offset)
 	{
-
 		i32 stored_len;
 		read(stored_len, a_offset);
 
@@ -54,6 +53,11 @@ namespace valunpak
 		bool result = read_fstring(buffer, a_offset);
 		a_path = buffer;
 		return result;
+	}
+	
+	bool ue4_bin_file::read_uobject(ue4_uobject& a_object, size_t& a_offset)
+	{
+		return false;
 	}
 }
 

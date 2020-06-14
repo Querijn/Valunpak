@@ -36,11 +36,11 @@ namespace valunpak
 	{
 		static file_entry_pair empty_pair = std::make_pair(nullptr, nullptr);
 
-		auto index = m_entries.find(a_path);
-		if (index == m_entries.end())
+		auto m_index = m_entries.find(a_path);
+		if (m_index == m_entries.end())
 			return empty_pair;
 
-		return *index->second;
+		return *m_index->second;
 	}
 
 	bool pak_filesystem::add(std::string_view a_file_name, bin_file::read_mode_type a_read_mode) noexcept
