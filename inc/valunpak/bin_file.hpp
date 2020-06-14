@@ -25,6 +25,7 @@ namespace valunpak
 		virtual bool open(std::string_view a_file_name, read_mode_type a_read_mode = read_mode_type::stream) noexcept;
 		virtual bool open(const std::vector<u8>& a_data) noexcept;
 		virtual bool open(const u8* a_data, size_t a_size) noexcept;
+		virtual bool open(bin_file& a_reader, size_t& a_offset) noexcept;
 
 		bool read_buffer(char* a_buffer, size_t a_length, size_t& a_offset) const;
 		bool read_string(std::string& a_string, size_t a_size, size_t& a_offset) const;
@@ -52,6 +53,6 @@ namespace valunpak
 
 	protected:
 		std::string m_file_name = "";
-		std::unique_ptr<base_file_impl> m_impl;
+		std::shared_ptr<base_file_impl> m_impl;
 	};
 }
