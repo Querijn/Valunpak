@@ -49,7 +49,11 @@ namespace valunpak
 		bool read_array(std::vector<T>& a_vector, size_t a_count, size_t& a_offset) const
 		{
 			a_vector.resize(a_count);
-			return read_array(a_vector.data(), a_count, a_offset); // Use regular pointer array functionality.
+			if (read_array(a_vector.data(), a_count, a_offset)) // Use regular pointer array functionality.
+				return true;
+
+			a_vector.clear();
+			return false;
 		}
 
 		template<typename T>
