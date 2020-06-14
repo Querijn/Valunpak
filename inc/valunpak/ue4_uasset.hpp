@@ -11,6 +11,9 @@ namespace valunpak
 		virtual bool open(std::string_view a_file_name, read_mode_type a_read_mode = read_mode_type::stream) noexcept override;
 		virtual bool open(const std::vector<u8>& a_data) noexcept override;
 		virtual bool open(const u8* a_data, size_t a_size) noexcept override;
+		virtual bool open(bin_file& a_reader, size_t& a_offset) noexcept override;
+
+		std::string get_name(size_t index) const;
 
 	#pragma pack(push, 1)
 		struct package_version_header
@@ -52,16 +55,35 @@ namespace valunpak
 			i32 thumbnail_table_offset;
 			i32 guid[4];
 		};
+
+		// Class instead of a struct because the index should always be interpreted differently,
+		// therefore, m_index needs to be private.
+		class package_index
+		{
+		public:
+			package_index() : m_index(0) {}
+			package_index(i32 a_index) : m_index(a_index) {}
+			operator i32() const { return m_index < 0 ? -m_index - 1 : m_index - 1; }
+
+			bool is_export() const { return m_index > 0; }
+			bool is_import() const { return m_index < 0; }
+
+			bool operator!=(i32 i) const { return i == 0 ? m_index != 0 : operator valunpak::i32() != i; }
+			bool operator==(i32 i) const { return operator!=(i) == false; }
+
+		private:
+			i32 m_index;
+		};
 		
 		struct package_export
 		{
-			i32 class_index;
-			i32 super_index;
-			i32 template_index;
+			package_index class_index;
+			package_index super_index;
+			package_index template_index;
 
-			i32 outer_index;
+			package_index outer_index;
 
-			i32 name_index;
+			package_index name_index;
 			i32 name_number;
 
 			u32 object_flags;
@@ -93,7 +115,7 @@ namespace valunpak
 		{
 			std::string class_package;
 			std::string class_name;
-			i32 outer_index;
+			package_index outer_index;
 			std::string object_name;
 		};
 
