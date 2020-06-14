@@ -1,5 +1,6 @@
 #include <valunpak/sha1.hpp>
 
+#include <cstring>
 
 namespace valunpak
 {
@@ -29,7 +30,7 @@ namespace valunpak
 	template<unsigned int count, typename T>
 	constexpr static inline T rol(T value)
 	{
-		static const unsigned int mask = (8 * sizeof(T) - 1);
+		const unsigned int mask = (8 * sizeof(T) - 1);
 		static_assert(std::is_unsigned<T>::value, "Rotate Left only makes sense for unsigned types");
 		static_assert(count <= mask, "Rotate Left can only take a value below or equal to its bit width.");
 		return (value << count) | (value >> ((-count) & mask));

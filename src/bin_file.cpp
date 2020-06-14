@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <cstring>
 #include <unordered_map>
 #include <thread>
 
@@ -56,7 +57,7 @@ namespace valunpak
 	{
 		bin_file_impl(std::string_view a_file_name)
 		{
-			stream.open(a_file_name, std::ios::binary | std::ios::ate);
+			stream.open(a_file_name.data(), std::ios::binary | std::ios::ate);
 			size = stream.tellg();
 		}
 
@@ -84,7 +85,7 @@ namespace valunpak
 	{
 		virtual_file_impl(std::string_view a_file_name)
 		{
-			std::ifstream stream(a_file_name, std::ios::binary | std::ios::ate);
+			std::ifstream stream(a_file_name.data(), std::ios::binary | std::ios::ate);
 			size = stream.tellg();
 			stream.seekg(0, std::ios::beg);
 			data.resize(size);

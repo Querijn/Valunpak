@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+#include <cstring>
+
 #include <debugbreak.h>
 
 namespace valunpak

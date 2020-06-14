@@ -79,7 +79,7 @@ namespace valunpak
 	}
 }
 
-int main() 
+int main()
 {
 	if (valunpak::get_key() == false)
 		return -1;
