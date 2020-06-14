@@ -1,4 +1,8 @@
 #include <valunpak/ue4_uasset.hpp>
+#include <valunpak/ue4_utexture2d.hpp>
+#include <valunpak/ue4_uobject.hpp>
+
+#include <cassert>
 
 #include <debugbreak.h>
 
@@ -48,6 +52,29 @@ namespace valunpak
 
 		return true;
 	}
+
+	bool ue4_uasset::open(bin_file& a_reader, size_t& a_offset) noexcept
+	{
+		reset();
+		if (ue4_bin_file::open(a_reader, a_offset) == false)
+			return false;
+
+		if (read_internal() == false)
+		{
+			reset();
+			return false;
+		}
+
+		return true;
+	}
+
+	std::string ue4_uasset::get_name(size_t index) const
+	{
+		if (index < m_names.size())
+			return m_names[index];
+
+		return "";
+	}
 	
 	bool ue4_uasset::package_version_header::is_valid() const
 	{
@@ -68,7 +95,8 @@ namespace valunpak
 			return false;
 
 		offset += (size_t)m_version_header.custom_versions * 5 * sizeof(i32); // Skip beyond custom versions
-		offset += sizeof(i32); // Skip beyond total header size
+		if (read(header_size, offset) == false)
+			return false;
 
 		std::string folder_name;
 		read_fstring(folder_name, offset);
@@ -92,10 +120,10 @@ namespace valunpak
 		for (i32 i = 0; i < m_info_header.import_count; i++)
 		{
 			package_import imp;
-			if (read_fname(imp.class_package, offset) == false ||
-				read_fname(imp.class_name, offset) == false ||
+			if (read_table_name(imp.class_package, *this, offset) == false ||
+				read_table_name(imp.class_name, *this, offset) == false ||
 				read(imp.outer_index, offset) == false ||
-				read_fname(imp.object_name, offset) == false)
+				read_table_name(imp.object_name, *this, offset) == false)
 				return false;
 
 			m_imports.push_back(imp);
@@ -103,15 +131,25 @@ namespace valunpak
 
 		// parse exports
 		offset = m_info_header.export_offset;
-		for (i32 i = 0; i < m_info_header.export_count; i++)
-		{
-			package_export exp;
-			if (read(exp, offset) == false)
-				return false;
+		if (read_array(m_exports, m_info_header.export_count, offset) == false)
+			return false;
 
-			m_exports.push_back(exp);
-		}
+		return true;
+	}
+	
+	bool ue4_uasset::read_table_name(std::string& a_name, bin_file& a_file, size_t& a_offset) const
+	{
+		i32 number;
+		return read_table_name(a_name, number, a_file, a_offset);
+	}
 
+	bool ue4_uasset::read_table_name(std::string& a_name, i32& a_number, bin_file& a_file, size_t& a_offset) const
+	{
+		i32 name_index, number;
+		if (a_file.read(name_index, a_offset) == false || a_file.read(number, a_offset) == false)
+			return false;
+
+		a_name = get_name(name_index);
 		return true;
 	}
 }

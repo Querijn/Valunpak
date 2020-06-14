@@ -119,8 +119,11 @@ namespace valunpak
 			std::string object_name;
 		};
 
+		friend class ue4_uobject;
+		friend class ue4_uexp;
 	private:
 		package_version_header m_version_header;
+		i32 header_size;
 		package_info_header m_info_header;
 		std::vector<std::string> m_names;
 		std::vector<package_import> m_imports;
@@ -128,5 +131,8 @@ namespace valunpak
 
 		void reset();
 		bool read_internal();
+
+		bool read_table_name(std::string& a_name, bin_file& a_file, size_t& a_offset) const;
+		bool read_table_name(std::string& a_name, i32& a_number, bin_file& a_file, size_t& a_offset) const;
 	};
 }

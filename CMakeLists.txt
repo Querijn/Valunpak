@@ -18,6 +18,9 @@ ADD_SRC(Crypto\\AES					"inc/valunpak/aes.hpp"					"src/aes.cpp")
 
 ADD_SRC(Unreal\\Bin					"inc/valunpak/ue4_bin_file.hpp"			"src/ue4_bin_file.cpp")
 ADD_SRC(Unreal\\Uasset				"inc/valunpak/ue4_uasset.hpp"			"src/ue4_uasset.cpp")
+ADD_SRC(Unreal\\Uobject				"inc/valunpak/ue4_uobject.hpp"			"src/ue4_uobject.cpp")
+ADD_SRC(Unreal\\UTexture2D			"inc/valunpak/ue4_utexture2d.hpp"		"src/ue4_utexture2d.cpp")
+ADD_SRC(Unreal\\UExp				"inc/valunpak/ue4_uexp.hpp"				"src/ue4_uexp.cpp")
 
 ADD_SRC(BinFile						"inc/valunpak/bin_file.hpp"				"src/bin_file.cpp")
 ADD_SRC(SigFile						"inc/valunpak/sig_file.hpp"				"src/sig_file.cpp")

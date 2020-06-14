@@ -1,5 +1,7 @@
 #include "valunpak/config.hpp"
-#include "valunpak/pak_file.hpp"
+#include "valunpak/pak_filesystem.hpp"
+#include "valunpak/ue4_uasset.hpp"
+#include "valunpak/ue4_uexp.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -27,36 +29,17 @@ namespace valunpak
 		std::chrono::high_resolution_clock::time_point t1;
 	};
 
-	std::vector<std::shared_ptr<pak_file>> files;
-	int read_all_files(const std::vector<u8>& key, bin_file::read_mode_type a_read_mode)
+	pak_filesystem paks;
+	bool read_all_files()
 	{
 		profiler extract_profiler("Loading");
-		valunpak::pak_file pak;
-		for (auto& dir_entry : fs::recursive_directory_iterator(PAK_FILE_DIR))
-		{
-			auto path = dir_entry.path();
-			if (path.has_extension() == false || path.extension() != ".pak")
-				continue;
-
-			std::shared_ptr<pak_file> pak = std::make_shared<pak_file>();
-			if (pak->open(path.generic_string(), key, a_read_mode) == false)
-				continue;
-			files.push_back(pak);
-
-			auto mountpoint = pak->get_mount_point();
-			for (auto& entry_pair : *pak)
-			{
-				// The full filename
-				auto filename = (mountpoint / entry_pair.first).generic_string();
-
-				pak_file::entry& entry = *(entry_pair.second);
-				size_t size = pak->get_file_size(entry);
-			}
-		}
+		paks.open(PAK_FILE_DIR);
+		return paks.empty() == false;
 	}
 
-	bool get_key(std::vector<u8>& a_key)
+	bool get_key()
 	{
+		std::vector<u8> key;
 		std::ifstream key_file("key.txt", std::ios::binary | std::ios::ate);
 		if (key_file.good() == false)
 		{
@@ -65,18 +48,44 @@ namespace valunpak
 		}
 
 		std::streampos key_size = key_file.tellg();
-		a_key.resize(key_size);
+		key.resize(key_size);
 		key_file.seekg(0, std::ios_base::beg);
-		key_file.read((char*)a_key.data(), key_size);
+		key_file.read((char*)key.data(), key_size);
+
+		paks.keys.add(key);
+		return true;
+	}
+
+	bool test()
+	{
+		std::string name = "ShooterGame/Content/UI/InGame/HUD/Minimap/Ascent/TX_Hud_Minimap_Venice_Vision_Mask";
+		auto uasset_pak_entry = paks.get_file(name + ".uasset");
+		if (uasset_pak_entry.first == nullptr)
+			return false;
+
+		ue4_uasset uasset_bin;
+		if (uasset_pak_entry.first->get_file_data(*uasset_pak_entry.second, &uasset_bin) == false)
+			return false;
+
+		auto uexp_pak_entry = paks.get_file(name + ".uexp");
+		if (uexp_pak_entry.first == nullptr)
+			return false;
+
+		ue4_uexp uexp_bin(uasset_bin);
+		if (uexp_pak_entry.first->get_file_data(*uexp_pak_entry.second, &uexp_bin) == false)
+			return false;
+
 		return true;
 	}
 }
 
 int main() 
 {
-	std::vector<valunpak::u8> key;
-	if (valunpak::get_key(key) == false)
+	if (valunpak::get_key() == false)
 		return -1;
 
-	return valunpak::read_all_files(key, valunpak::bin_file::read_mode_type::stream) ? 0 : -2;
+	if (valunpak::read_all_files() == false)
+		return -2;
+
+	return valunpak::test() ? 0 : -3;
 }
