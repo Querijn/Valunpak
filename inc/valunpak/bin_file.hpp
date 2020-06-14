@@ -31,6 +31,8 @@ namespace valunpak
 		bool read_string(std::string& a_string, size_t a_size, size_t& a_offset) const;
 		size_t get_size() const;
 
+		bool find_buffer(const u8* a_buffer, size_t a_size, size_t& a_offset) const;
+
 		template<typename T>
 		bool read(T& a_type, size_t& a_offset) const
 		{
@@ -50,6 +52,11 @@ namespace valunpak
 			return read_array(a_vector.data(), a_count, a_offset); // Use regular pointer array functionality.
 		}
 
+		template<typename T>
+		bool find(T pod, size_t& a_offset) const
+		{
+			return find_buffer(reinterpret_cast<u8*>(&pod), sizeof(T), a_offset);
+		}
 
 	protected:
 		std::string m_file_name = "";

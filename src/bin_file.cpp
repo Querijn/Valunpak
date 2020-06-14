@@ -14,7 +14,42 @@ namespace valunpak
 	struct base_file_impl
 	{
 		virtual bool get_data(u8* a_buffer, size_t a_size, size_t& a_offset) = 0;
+
 		virtual size_t get_size() const = 0;
+
+		bool find_buffer(const u8* a_buffer, size_t a_size, size_t& a_offset)
+		{
+			// We're going over the whole thing, 1024 elements at a time.
+			size_t buffer_size = a_size * 1024;
+			std::vector<u8> buffer(buffer_size);
+			size_t search = a_offset;
+			size_t size = get_size();
+
+			// Keep searching as long as we just searched 1024 items. If it's less, we're at the end.
+			size_t search_count = 0;
+			do
+			{
+				size_t room_left = size - search; // Basically bytes until the end of the file.
+				size_t search_size = buffer_size < room_left ? buffer_size : room_left; // size in bytes
+				if (get_data(buffer.data(), search_size, search) == false) // Should always return true
+					return false;
+
+				search_count = buffer_size >= room_left ? search_size / a_size : 1024; // Convert back to element count (should be 1024)
+				const u8* ptr = buffer.data();
+				const u8* end = ptr + buffer_size;
+				for (; ptr <= end; ptr += a_size) // And search
+				{
+					if (memcmp(a_buffer, ptr, a_size) == 0)
+					{
+						a_offset = search;
+						return true;
+					}
+				}
+			} while (search_count == 1024);
+
+			// TODO: Should really verify coverage
+			return memcmp(a_buffer, buffer.data() + buffer_size - a_size, a_size) == 0; // Make sure we got the last bytes too
+		}
 	};
 
 	struct bin_file_impl : base_file_impl
