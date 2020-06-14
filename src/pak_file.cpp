@@ -145,7 +145,7 @@ namespace valunpak
 
 			mem_file.read(cur_entry->flags, offset);
 			mem_file.read(cur_entry->compression_block_size, offset);
-			cur_entry->header_size = offset - start_offset;
+			cur_entry->header_size = static_cast<u32>(offset - start_offset);
 			m_entries[path] = std::move(cur_entry);
 		}
 
