@@ -307,6 +307,12 @@ namespace valunpak
 				return 0;
 		}
 
+		i32 has_guid;
+		if (read(has_guid, offset) == false)
+			return 0;
+		if (has_guid)
+			offset += sizeof(i32) * 4;
+
 		return offset;
 	}
 }
