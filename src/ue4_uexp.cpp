@@ -87,7 +87,7 @@ namespace valunpak
 		// export all files
 		for (auto& exp : m_uasset->m_exports)
 		{
-			static int i = 0; if (++i == 4) __debugbreak();
+			static int i = 0; if (++i == 4) debug_break();
 
 			size_t offset = exp.serial_offset - m_uasset->header_size;
 			assert(exp.class_index != 0);

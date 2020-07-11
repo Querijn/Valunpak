@@ -16,14 +16,12 @@ namespace valunpak
 		if (m_object.open(a_parent, a_offset) == false)
 			return false;
 
-		size_t offset_increment = read_internal();
-		if (offset_increment == 0)
+		if (read_internal(a_offset) == false)
 		{
 			reset();
 			return false;
 		}
 
-		a_offset += offset_increment;
 		return true;
 	}
 
@@ -33,13 +31,18 @@ namespace valunpak
 	}
 
 #pragma optimize("", off)
-	size_t ue4_utexture2d::read_internal()
+	bool ue4_utexture2d::read_internal(size_t& a_offset)
 	{
-		size_t offset = 0;
-		if (read(m_header, offset) == false)
+		if (read(m_header, a_offset) == false)
 			return 0;
 
-		return offset;
+		// TODO:
+		if (m_header.is_cooked)
+		{
+			debug_break();
+		}
+
+		return a_offset;
 	}
 }
 

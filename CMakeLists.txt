@@ -12,16 +12,23 @@ endfunction(ADD_SRC)
 # Local includes
 include_directories("ext" "inc" "src")
 
+# Crypto files
 ADD_SRC(Crypto\\AES\\Rijndael		"ext/rijndael/rijndael.hpp"				"ext/rijndael/rijndael.cpp")
 ADD_SRC(Crypto\\SHA1				"inc/valunpak/sha1.hpp"					"src/sha1.cpp")
 ADD_SRC(Crypto\\AES					"inc/valunpak/aes.hpp"					"src/aes.cpp")
+ADD_SRC(Crypto\\FNV1				"inc/valunpak/fnv1.hpp"					"src/fnv1.cpp")
 
+# Utility 
+ADD_SRC(Utility\\Json				"inc/valunpak/json_writer.hpp"			"src/json_writer.cpp")
+
+# Unreal files
 ADD_SRC(Unreal\\Bin					"inc/valunpak/ue4_bin_file.hpp"			"src/ue4_bin_file.cpp")
 ADD_SRC(Unreal\\Uasset				"inc/valunpak/ue4_uasset.hpp"			"src/ue4_uasset.cpp")
 ADD_SRC(Unreal\\Uobject				"inc/valunpak/ue4_uobject.hpp"			"src/ue4_uobject.cpp")
 ADD_SRC(Unreal\\UTexture2D			"inc/valunpak/ue4_utexture2d.hpp"		"src/ue4_utexture2d.cpp")
 ADD_SRC(Unreal\\UExp				"inc/valunpak/ue4_uexp.hpp"				"src/ue4_uexp.cpp")
 
+# High level UE files
 ADD_SRC(BinFile						"inc/valunpak/bin_file.hpp"				"src/bin_file.cpp")
 ADD_SRC(SigFile						"inc/valunpak/sig_file.hpp"				"src/sig_file.cpp")
 ADD_SRC(Pak\\File					"inc/valunpak/pak_file.hpp"				"src/pak_file.cpp")

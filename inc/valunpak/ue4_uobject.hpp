@@ -2,6 +2,7 @@
 
 #include <valunpak/config.hpp>
 #include <valunpak/ue4_bin_file.hpp>
+#include <valunpak/fnv1.hpp>
 
 #include <map>
 
@@ -23,6 +24,55 @@ namespace valunpak
 	private:
 		void reset();
 		size_t read_internal();
+
+		enum class read_tag_result_type
+		{
+			failed,
+			succeeded,
+			no_entry,
+		};
+
+		enum class property_type
+		{
+			byte_property = fnv("ByteProperty"),
+			bool_property = fnv("BoolProperty"),
+			int_property = fnv("IntProperty"),
+			float_property = fnv("FloatProperty"),
+			object_property = fnv("ObjectProperty"),
+			name_property = fnv("NameProperty"),
+			delegate_property = fnv("DelegateProperty"),
+			double_property = fnv("DoubleProperty"),
+			array_property = fnv("ArrayProperty"),
+			struct_property = fnv("StructProperty"),
+			str_property = fnv("StrProperty"),
+			text_property = fnv("TextProperty"),
+			interface_property = fnv("InterfaceProperty"),
+			softobject_property = fnv("SoftObjectProperty"),
+			uint64_property = fnv("UInt64Property"),
+			uint32_property = fnv("UInt32Property"),
+			uint16_property = fnv("UInt16Property"),
+			int16_property = fnv("Int16Property"),
+			int8_property = fnv("Int8Property"),
+			map_property = fnv("MapProperty"),
+			set_property = fnv("SetProperty"),
+			enum_property = fnv("EnumProperty"),
+		};
+
+		struct property_tag
+		{
+			std::string name;
+			property_type type;
+
+			i32 size;
+			i32 array_index;
+
+			base_property* prop;
+		};
+
+		read_tag_result_type read_tag(property_tag& a_tag, size_t& a_offset);
+
+		bool read_struct_property(property_tag& a_tag, size_t& a_offset);
+		bool read_property(property_tag& a_tag, size_t& a_offset);
 
 		ue4_uexp* m_parent = nullptr;
 		std::map<std::string, std::unique_ptr<base_property>> m_props;
