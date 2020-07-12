@@ -30,6 +30,6 @@ namespace valunpak
 		return (value & flag) != 0;
 	}
 
-#define VALUNPAK_REQUIRE_RET(exp, ret) do { if((exp) == false) return (ret); } while(0);
-#define VALUNPAK_REQUIRE(exp) VALUNPAK_REQUIRE_RET(exp, false);
+#define VALUNPAK_REQUIRE_RET(exp, ret) do { if((exp) == false) return (ret); } while(0)
+#define VALUNPAK_REQUIRE(exp) VALUNPAK_REQUIRE_RET(exp, false)
 }

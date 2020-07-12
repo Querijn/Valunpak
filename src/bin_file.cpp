@@ -135,7 +135,7 @@ namespace valunpak
 		bool get_data(u8* a_buffer, size_t a_size, size_t& a_offset) override
 		{
 			size_t offset = base_offset + a_offset;
-			VALUNPAK_REQUIRE(parent->get_data(a_buffer, a_size, offset))
+			VALUNPAK_REQUIRE(parent->get_data(a_buffer, a_size, offset));
 
 			a_offset += (offset - (base_offset + a_offset));
 			return true;

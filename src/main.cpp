@@ -72,7 +72,7 @@ namespace valunpak
 			VALUNPAK_REQUIRE(ubulk_pak_entry.first->get_file_data(*ubulk_pak_entry.second, &ubulk_bin));
 
 		auto uexp_pak_entry = paks.get_file(name + ".uexp");
-		VALUNPAK_REQUIRE(uexp_pak_entry.first)
+		VALUNPAK_REQUIRE(uexp_pak_entry.first);
 
 		ue4_uexp uexp_bin(uasset_bin, ubulk_pak_entry.first ? &ubulk_bin : nullptr);
 		VALUNPAK_REQUIRE(uexp_pak_entry.first->get_file_data(*uexp_pak_entry.second, &uexp_bin));
