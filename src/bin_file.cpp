@@ -32,8 +32,7 @@ namespace valunpak
 			{
 				size_t room_left = size - search; // Basically bytes until the end of the file.
 				size_t search_size = buffer_size < room_left ? buffer_size : room_left; // size in bytes
-				if (get_data(buffer.data(), search_size, search) == false) // Should always return true
-					return false;
+				VALUNPAK_REQUIRE(get_data(buffer.data(), search_size, search));
 
 				search_count = buffer_size >= room_left ? search_size / a_size : 1024; // Convert back to element count (should be 1024)
 				const u8* ptr = buffer.data();
@@ -136,13 +135,10 @@ namespace valunpak
 		bool get_data(u8* a_buffer, size_t a_size, size_t& a_offset) override
 		{
 			size_t offset = base_offset + a_offset;
-			if (parent->get_data(a_buffer, a_size, offset))
-			{
-				a_offset += (offset - (base_offset + a_offset));
-				return true;
-			}
+			VALUNPAK_REQUIRE(parent->get_data(a_buffer, a_size, offset))
 
-			return false;
+			a_offset += (offset - (base_offset + a_offset));
+			return true;
 		}
 
 		size_t get_size() const override
@@ -156,8 +152,7 @@ namespace valunpak
 
 	bool bin_file::open(std::string_view a_file_name, read_mode_type a_read_mode) noexcept
 	{
-		if (!fs::exists(a_file_name))
-			return false;
+		VALUNPAK_REQUIRE(fs::exists(a_file_name));
 
 		m_file_name = a_file_name;
 		if (a_read_mode == read_mode_type::stream)

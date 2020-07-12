@@ -58,22 +58,24 @@ namespace valunpak
 
 	bool test()
 	{
-		std::string name = "ShooterGame/Content/UI/InGame/HUD/Minimap/Ascent/TX_Hud_Minimap_Venice_Vision_Mask";
+		std::string name = "ShooterGame/Content/UI/InGame/KillBanner/Base/Assets/Base_Emblem";
 		auto uasset_pak_entry = paks.get_file(name + ".uasset");
-		if (uasset_pak_entry.first == nullptr)
-			return false;
+		VALUNPAK_REQUIRE(uasset_pak_entry.first);
 
 		ue4_uasset uasset_bin;
-		if (uasset_pak_entry.first->get_file_data(*uasset_pak_entry.second, &uasset_bin) == false)
-			return false;
+		VALUNPAK_REQUIRE(uasset_pak_entry.first->get_file_data(*uasset_pak_entry.second, &uasset_bin));
+
+		// Ubulk is optional
+		auto ubulk_pak_entry = paks.get_file(name + ".ubulk");
+		ue4_bin_file ubulk_bin;
+		if (ubulk_pak_entry.first != nullptr)
+			VALUNPAK_REQUIRE(ubulk_pak_entry.first->get_file_data(*ubulk_pak_entry.second, &ubulk_bin));
 
 		auto uexp_pak_entry = paks.get_file(name + ".uexp");
-		if (uexp_pak_entry.first == nullptr)
-			return false;
+		VALUNPAK_REQUIRE(uexp_pak_entry.first)
 
-		ue4_uexp uexp_bin(uasset_bin);
-		if (uexp_pak_entry.first->get_file_data(*uexp_pak_entry.second, &uexp_bin) == false)
-			return false;
+		ue4_uexp uexp_bin(uasset_bin, ubulk_pak_entry.first ? &ubulk_bin : nullptr);
+		VALUNPAK_REQUIRE(uexp_pak_entry.first->get_file_data(*uexp_pak_entry.second, &uexp_bin))
 
 		return true;
 	}

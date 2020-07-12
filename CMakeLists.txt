@@ -27,6 +27,7 @@ ADD_SRC(Unreal\\Uasset				"inc/valunpak/ue4_uasset.hpp"			"src/ue4_uasset.cpp")
 ADD_SRC(Unreal\\Uobject				"inc/valunpak/ue4_uobject.hpp"			"src/ue4_uobject.cpp")
 ADD_SRC(Unreal\\UTexture2D			"inc/valunpak/ue4_utexture2d.hpp"		"src/ue4_utexture2d.cpp")
 ADD_SRC(Unreal\\UExp				"inc/valunpak/ue4_uexp.hpp"				"src/ue4_uexp.cpp")
+ADD_SRC(Unreal\\BulkData			"inc/valunpak/ue4_bulkdata.hpp"			"src/ue4_bulkdata.cpp")
 
 # High level UE files
 ADD_SRC(BinFile						"inc/valunpak/bin_file.hpp"				"src/bin_file.cpp")

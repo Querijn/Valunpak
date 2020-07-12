@@ -115,40 +115,40 @@ namespace valunpak
 
 	bool ue4_uobject::open(ue4_uexp& a_parent, size_t& a_offset)
 	{
+		reset();
 		m_parent = &a_parent;
-
-		if (bin_file::open(a_parent, a_offset) == false)
-			return false;
+		VALUNPAK_REQUIRE(bin_file::open(a_parent, a_offset));
 
 		size_t offset = read_internal();
+		if (offset == 0)
+		{
+			reset();
+			return false;
+		}
+
 		a_offset += offset;
-		return offset != 0;
+		return true;
 	}
 
 	void ue4_uobject::reset()
 	{
+		m_props.clear();
 	}
 
 #pragma optimize("", off)
 	ue4_uobject::read_tag_result_type ue4_uobject::read_tag(ue4_uobject::property_tag& a_tag, size_t& a_offset)
 	{
-		if (m_parent->read_table_name(a_tag.name, *this, a_offset) == false)
-			return read_tag_result_type::failed;
-
+		VALUNPAK_REQUIRE_RET(m_parent->read_table_name(a_tag.name, *this, a_offset), read_tag_result_type::failed);
 		if (a_tag.name == "None")
-			return read_tag_result_type::no_entry; // This is fine
+			return read_tag_result_type::no_entry; // This is fine, basically EOF
 
 		std::string type_name;
 		i32 type_number;
-		if (m_parent->read_table_name(type_name, type_number, *this, a_offset) == false)
-			return read_tag_result_type::failed;
+		VALUNPAK_REQUIRE_RET(m_parent->read_table_name(type_name, type_number, *this, a_offset), read_tag_result_type::failed);
 
 		a_tag.type = (property_type)fnv(type_name.c_str());
 
-		if (read(a_tag.size, a_offset) == false || read(a_tag.array_index, a_offset) == false)
-			return read_tag_result_type::failed;
-
-		auto pos = a_offset;
+		VALUNPAK_REQUIRE_RET(read(a_tag.size, a_offset) && read(a_tag.array_index, a_offset), read_tag_result_type::failed);
 
 		auto& prop = m_props[a_tag.name];
 		if (type_number == 0)
@@ -158,12 +158,8 @@ namespace valunpak
 			case property_type::struct_property:
 			{
 				std::unique_ptr<struct_property> struct_prop = std::make_unique<struct_property>();
-				if (m_parent->read_table_name(struct_prop->name, *this, a_offset) == false)
-					return read_tag_result_type::failed;
-
-				if (read_array(struct_prop->guid, 4, a_offset) == false)
-					return read_tag_result_type::failed;
-
+				VALUNPAK_REQUIRE_RET(m_parent->read_table_name(struct_prop->name, *this, a_offset), read_tag_result_type::failed);
+				VALUNPAK_REQUIRE_RET(read_array(struct_prop->guid, 4, a_offset), read_tag_result_type::failed);
 				prop = std::move(struct_prop);
 				break;
 			}
@@ -171,9 +167,7 @@ namespace valunpak
 			case property_type::bool_property:
 			{
 				std::unique_ptr<bool_property> bool_prop = std::make_unique<bool_property>();
-				if (read(bool_prop->value, a_offset) == false)
-					return read_tag_result_type::failed;
-
+				VALUNPAK_REQUIRE_RET(read(bool_prop->value, a_offset), read_tag_result_type::failed);
 				prop = std::move(bool_prop);
 				break;
 			}
@@ -182,9 +176,7 @@ namespace valunpak
 			case property_type::enum_property:
 			{
 				std::unique_ptr<enum_property> bool_prop = std::make_unique<enum_property>();
-				if (m_parent->read_table_name(bool_prop->name, *this, a_offset) == false)
-					return read_tag_result_type::failed;
-
+				VALUNPAK_REQUIRE_RET(m_parent->read_table_name(bool_prop->name, *this, a_offset), read_tag_result_type::failed);
 				prop = std::move(bool_prop);
 				break;
 			}
@@ -193,9 +185,7 @@ namespace valunpak
 			case property_type::set_property:
 			{
 				std::unique_ptr<enum_property> enum_prop = std::make_unique<enum_property>();
-				if (m_parent->read_table_name(enum_prop->name, *this, a_offset) == false)
-					return read_tag_result_type::failed;
-
+				VALUNPAK_REQUIRE_RET(m_parent->read_table_name(enum_prop->name, *this, a_offset), read_tag_result_type::failed);
 				prop = std::move(enum_prop);
 				break;
 			}
@@ -203,11 +193,8 @@ namespace valunpak
 			case property_type::map_property:
 			{
 				std::unique_ptr<map_property> map_prop = std::make_unique<map_property>();
-				if (m_parent->read_table_name(map_prop->key_name, *this, a_offset) == false)
-					return read_tag_result_type::failed;
-
-				if (m_parent->read_table_name(map_prop->value_name, *this, a_offset) == false)
-					return read_tag_result_type::failed;
+				VALUNPAK_REQUIRE_RET(m_parent->read_table_name(map_prop->key_name, *this, a_offset), read_tag_result_type::failed);
+				VALUNPAK_REQUIRE_RET(m_parent->read_table_name(map_prop->value_name, *this, a_offset), read_tag_result_type::failed);
 				prop = std::move(map_prop);
 				break;
 			}
@@ -220,14 +207,10 @@ namespace valunpak
 			}
 		}
 
-		if (read(prop->has_property_guid, a_offset) == false)
-			return read_tag_result_type::failed;
+		VALUNPAK_REQUIRE_RET(read(prop->has_property_guid, a_offset), read_tag_result_type::failed);
 
 		if (prop->has_property_guid)
-		{
-			if (read_array(prop->property_guid, 4, a_offset) == false)
-				return read_tag_result_type::failed;
-		}
+			VALUNPAK_REQUIRE_RET(read_array(prop->property_guid, 4, a_offset), read_tag_result_type::failed);
 
 		a_tag.prop = prop.get();
 		return read_tag_result_type::succeeded;
@@ -303,16 +286,13 @@ namespace valunpak
 			else if (tag_result == read_tag_result_type::no_entry)
 				break; // We're done
 
-			if (read_property(tag, offset) == false)
-				return 0;
+			VALUNPAK_REQUIRE_RET(read_property(tag, offset), 0);
 		}
 
 		i32 has_guid;
-		if (read(has_guid, offset) == false)
-			return 0;
+		VALUNPAK_REQUIRE_RET(read(has_guid, offset), 0);
 		if (has_guid)
 			offset += sizeof(i32) * 4;
-
 		return offset;
 	}
 }

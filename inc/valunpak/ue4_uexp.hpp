@@ -10,7 +10,7 @@ namespace valunpak
 	{
 	public:
 		ue4_uexp() {}
-		ue4_uexp(ue4_uasset& a_uasset);
+		ue4_uexp(ue4_uasset& a_uasset, ue4_bin_file* a_ubulk);
 
 		virtual bool open(std::string_view a_file_name, read_mode_type a_read_mode = read_mode_type::stream) noexcept override;
 		virtual bool open(const std::vector<u8>& a_data) noexcept override;
@@ -22,8 +22,10 @@ namespace valunpak
 	#pragma pack(pop)
 
 		friend class ue4_uobject;
+		friend class ue4_utexture2d;
 	private:
 		ue4_uasset* m_uasset = nullptr;
+		ue4_bin_file* m_ubulk = nullptr;
 		std::vector<std::unique_ptr<ue4_bin_file>> m_files;
 
 		void reset();
