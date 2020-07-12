@@ -20,6 +20,7 @@ ADD_SRC(Crypto\\FNV1				"inc/valunpak/fnv1.hpp"					"src/fnv1.cpp")
 
 # Utility 
 ADD_SRC(Utility\\Json				"inc/valunpak/json_writer.hpp"			"src/json_writer.cpp")
+ADD_SRC(Utility\\VectorGetter		"inc/valunpak/vector_getter.hpp"		"")
 
 # Unreal files
 ADD_SRC(Unreal\\Bin					"inc/valunpak/ue4_bin_file.hpp"			"src/ue4_bin_file.cpp")
