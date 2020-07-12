@@ -10,6 +10,8 @@
 
 namespace valunpak
 {
+	ue4_uasset::ue4_uasset() : exports(this) {}
+
 	bool ue4_uasset::open(std::string_view a_file_name, read_mode_type a_read_mode) noexcept
 	{
 		reset();
