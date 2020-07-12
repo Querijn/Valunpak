@@ -75,7 +75,7 @@ namespace valunpak
 		VALUNPAK_REQUIRE(uexp_pak_entry.first)
 
 		ue4_uexp uexp_bin(uasset_bin, ubulk_pak_entry.first ? &ubulk_bin : nullptr);
-		VALUNPAK_REQUIRE(uexp_pak_entry.first->get_file_data(*uexp_pak_entry.second, &uexp_bin))
+		VALUNPAK_REQUIRE(uexp_pak_entry.first->get_file_data(*uexp_pak_entry.second, &uexp_bin));
 
 		return true;
 	}
