@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <debugbreak.h>
 
 namespace valunpak
 {
@@ -30,6 +31,22 @@ namespace valunpak
 		return (value & flag) != 0;
 	}
 
-#define VALUNPAK_REQUIRE_RET(exp, ret) do { if((exp) == false) return (ret); } while(0)
+#ifdef WIN32
+#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+#else
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+
+#define VALUNPAK_REQUIRE_RET(exp, ret) do \
+{ \
+	if((exp) == false) \
+	{ \
+		printf("%s:%d -> Failed VALUNPAK_REQUIRE (%s)\n", __FILE__, __LINE__, #exp); \
+		debug_break(); \
+		return (ret); \
+	} \
+} \
+while(0)
+
 #define VALUNPAK_REQUIRE(exp) VALUNPAK_REQUIRE_RET(exp, false)
 }
