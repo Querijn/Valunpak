@@ -9,8 +9,10 @@
 
 namespace valunpak
 {
+	ue4_uexp::ue4_uexp() : files(this) {}
+
 	ue4_uexp::ue4_uexp(ue4_uasset& a_uasset, ue4_bin_file* a_ubulk) :
-		m_uasset(&a_uasset), m_ubulk(a_ubulk)
+		files(this), m_uasset(&a_uasset), m_ubulk(a_ubulk)
 	{
 	}
 

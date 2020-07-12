@@ -2,12 +2,15 @@
 
 #include <valunpak/config.hpp>
 #include <valunpak/ue4_bin_file.hpp>
+#include <valunpak/vector_getter.hpp>
 
 namespace valunpak
 {
 	class ue4_uasset : public ue4_bin_file
 	{
 	public:
+		ue4_uasset();
+
 	#pragma pack(push, 1)
 		struct package_version_header
 		{
@@ -118,7 +121,8 @@ namespace valunpak
 		virtual bool open(bin_file& a_reader, size_t& a_offset) noexcept override;
 
 		std::string get_name(size_t a_index) const;
-		const package_export& get_export(size_t a_index) const;
+
+		VALUNPAK_VECTOR_GETTER(ue4_uasset, std::vector<package_export>, m_exports) exports;
 
 		friend class ue4_uobject;
 		friend class ue4_uexp;
