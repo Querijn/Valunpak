@@ -8,13 +8,6 @@ namespace valunpak
 	class ue4_uasset : public ue4_bin_file
 	{
 	public:
-		virtual bool open(std::string_view a_file_name, read_mode_type a_read_mode = read_mode_type::stream) noexcept override;
-		virtual bool open(const std::vector<u8>& a_data) noexcept override;
-		virtual bool open(const u8* a_data, size_t a_size) noexcept override;
-		virtual bool open(bin_file& a_reader, size_t& a_offset) noexcept override;
-
-		std::string get_name(size_t index) const;
-
 	#pragma pack(push, 1)
 		struct package_version_header
 		{
@@ -118,6 +111,14 @@ namespace valunpak
 			package_index outer_index;
 			std::string object_name;
 		};
+
+		virtual bool open(std::string_view a_file_name, read_mode_type a_read_mode = read_mode_type::stream) noexcept override;
+		virtual bool open(const std::vector<u8>& a_data) noexcept override;
+		virtual bool open(const u8* a_data, size_t a_size) noexcept override;
+		virtual bool open(bin_file& a_reader, size_t& a_offset) noexcept override;
+
+		std::string get_name(size_t a_index) const;
+		const package_export& get_export(size_t a_index) const;
 
 		friend class ue4_uobject;
 		friend class ue4_uexp;

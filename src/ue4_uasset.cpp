@@ -13,8 +13,7 @@ namespace valunpak
 	bool ue4_uasset::open(std::string_view a_file_name, read_mode_type a_read_mode) noexcept
 	{
 		reset();
-		if (ue4_bin_file::open(a_file_name, a_read_mode) == false)
-			return false;
+		VALUNPAK_REQUIRE(ue4_bin_file::open(a_file_name, a_read_mode));
 
 		if (read_internal() == false)
 		{
@@ -28,8 +27,7 @@ namespace valunpak
 	bool ue4_uasset::open(const std::vector<u8>& a_data) noexcept
 	{
 		reset();
-		if (ue4_bin_file::open(a_data) == false)
-			return false;
+		VALUNPAK_REQUIRE(ue4_bin_file::open(a_data));
 
 		if (read_internal() == false)
 		{
@@ -43,8 +41,7 @@ namespace valunpak
 	bool ue4_uasset::open(const u8* a_data, size_t a_size) noexcept
 	{
 		reset();
-		if (ue4_bin_file::open(a_data, a_size) == false)
-			return false;
+		VALUNPAK_REQUIRE(ue4_bin_file::open(a_data, a_size));
 
 		if (read_internal() == false)
 		{
@@ -58,8 +55,7 @@ namespace valunpak
 	bool ue4_uasset::open(bin_file& a_reader, size_t& a_offset) noexcept
 	{
 		reset();
-		if (ue4_bin_file::open(a_reader, a_offset) == false)
-			return false;
+		VALUNPAK_REQUIRE(ue4_bin_file::open(a_reader, a_offset));
 
 		if (read_internal() == false)
 		{
@@ -75,7 +71,17 @@ namespace valunpak
 		if (index < m_names.size())
 			return m_names[index];
 
+		debug_break(); // TODO: Make an assert
 		return "";
+	}
+
+	const ue4_uasset::package_export& ue4_uasset::get_export(size_t a_index) const
+	{
+		if (a_index < m_exports.size())
+			return m_exports[a_index];
+
+		debug_break(); // TODO: Make an assert
+		return ue4_uasset::package_export();
 	}
 	
 	bool ue4_uasset::package_version_header::is_valid() const
@@ -93,26 +99,22 @@ namespace valunpak
 	bool ue4_uasset::read_internal()
 	{
 		size_t offset = 0;
-		if (read(m_version_header, offset) == false || m_version_header.is_valid() == false)
-			return false;
+		VALUNPAK_REQUIRE(read(m_version_header, offset) && m_version_header.is_valid());
 
 		offset += (size_t)m_version_header.custom_versions * 5 * sizeof(i32); // Skip beyond custom versions
-		if (read(header_size, offset) == false)
-			return false;
+		VALUNPAK_REQUIRE(read(header_size, offset));
 
 		std::string folder_name;
 		read_fstring(folder_name, offset);
 
-		if (read(m_info_header, offset) == false)
-			return false;
+		VALUNPAK_REQUIRE(read(m_info_header, offset));
 
 		// parse names
 		offset = m_info_header.name_offset;
 		for (i32 i = 0; i < m_info_header.name_count; i++)
 		{
 			std::string name;
-			if (read_fname(name, offset) == false)
-				return false;
+			VALUNPAK_REQUIRE(read_fname(name, offset));
 
 			m_names.push_back(name);
 		}
@@ -122,20 +124,16 @@ namespace valunpak
 		for (i32 i = 0; i < m_info_header.import_count; i++)
 		{
 			package_import imp;
-			if (read_table_name(imp.class_package, *this, offset) == false ||
-				read_table_name(imp.class_name, *this, offset) == false ||
-				read(imp.outer_index, offset) == false ||
-				read_table_name(imp.object_name, *this, offset) == false)
-				return false;
-
+			VALUNPAK_REQUIRE(read_table_name(imp.class_package, *this, offset));
+			VALUNPAK_REQUIRE(read_table_name(imp.class_name, *this, offset));
+			VALUNPAK_REQUIRE(read(imp.outer_index, offset));
+			VALUNPAK_REQUIRE(read_table_name(imp.object_name, *this, offset));
 			m_imports.push_back(imp);
 		}
 
 		// parse exports
 		offset = m_info_header.export_offset;
-		if (read_array(m_exports, m_info_header.export_count, offset) == false)
-			return false;
-
+		VALUNPAK_REQUIRE(read_array(m_exports, m_info_header.export_count, offset));
 		return true;
 	}
 	
@@ -148,10 +146,9 @@ namespace valunpak
 	bool ue4_uasset::read_table_name(std::string& a_name, i32& a_number, bin_file& a_file, size_t& a_offset) const
 	{
 		i32 name_index;
-		if (a_file.read(name_index, a_offset) == false || a_file.read(a_number, a_offset) == false)
-			return false;
-
+		VALUNPAK_REQUIRE(a_file.read(name_index, a_offset) && a_file.read(a_number, a_offset));
 		a_name = get_name(name_index);
+
 		return true;
 	}
 }
