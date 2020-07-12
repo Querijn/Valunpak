@@ -67,7 +67,6 @@ namespace valunpak
 		return true;
 	}
 
-#pragma optimize("", off)
 	void ue4_uexp::reset()
 	{
 		m_files.clear();

@@ -27,7 +27,6 @@ namespace valunpak
 		m_data.clear();
 	}
 
-#pragma optimize("", off)
 	size_t ue4_bulkdata::read_internal()
 	{
 		size_t offset = 0;

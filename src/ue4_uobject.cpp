@@ -135,7 +135,6 @@ namespace valunpak
 		m_props.clear();
 	}
 
-#pragma optimize("", off)
 	ue4_uobject::read_tag_result_type ue4_uobject::read_tag(ue4_uobject::property_tag& a_tag, size_t& a_offset)
 	{
 		VALUNPAK_REQUIRE_RET(m_parent->read_table_name(a_tag.name, *this, a_offset), read_tag_result_type::failed);
