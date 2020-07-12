@@ -214,7 +214,7 @@ namespace valunpak
 		a_tag.prop = prop.get();
 		return read_tag_result_type::succeeded;
 	}
-	
+
 	bool ue4_uobject::read_struct_property(ue4_uobject::property_tag& a_tag, size_t& a_offset)
 	{
 		auto prop = reinterpret_cast<struct_property*>(a_tag.prop);
@@ -237,11 +237,11 @@ namespace valunpak
 			default_case(guid, guid_element);
 
 		default:
-			debug_break();
-			return false;
+			VALUNPAK_REQUIRE(false);
 		};
 
 #undef default_case
+		return true;
 	}
 
 	bool ue4_uobject::read_property(ue4_uobject::property_tag& a_tag, size_t& a_offset)
@@ -250,8 +250,7 @@ namespace valunpak
 		{
 		case property_type::struct_property:
 		{
-			if (read_struct_property(a_tag, a_offset) == false)
-				return false;
+			VALUNPAK_REQUIRE(read_struct_property(a_tag, a_offset));
 			break;
 		}
 
@@ -264,7 +263,7 @@ namespace valunpak
 		case property_type::array_property:
 		case property_type::set_property:
 		case property_type::map_property:
-			debug_break();
+			VALUNPAK_REQUIRE(false);
 			return false;
 
 		}
