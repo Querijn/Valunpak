@@ -12,7 +12,8 @@ namespace valunpak
 	class ue4_uobject : public ue4_base
 	{
 	public:
-		bool open(ue4_uexp& a_parent, size_t& a_offset, bool a_is_element = false);
+		bool open(ue4_uexp& a_parent, size_t& a_offset);
+		bool open(ue4_uexp& a_uexp, ue4_bin_file& a_parent, size_t& a_offset);
 
 		class base_property
 		{
@@ -74,7 +75,7 @@ namespace valunpak
 		bool read_struct_property(property_tag& a_tag, size_t& a_offset);
 		bool read_property(property_tag& a_tag, size_t& a_offset);
 
-		ue4_uexp* m_parent = nullptr;
+		ue4_uexp* m_uexp = nullptr;
 		std::map<std::string, std::unique_ptr<base_property>> m_props;
 	};
 }
