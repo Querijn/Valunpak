@@ -50,3 +50,6 @@ while(0)
 
 #define VALUNPAK_REQUIRE(exp) VALUNPAK_REQUIRE_RET(exp, false)
 }
+
+#pragma warning(disable: 4201) // Nameless structs are fine imo
+#pragma warning(disable: 4201) // Condition is constant
