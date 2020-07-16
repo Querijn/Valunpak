@@ -2,6 +2,7 @@
 
 #include <valunpak/config.hpp>
 #include <valunpak/pak_file.hpp>
+#include <valunpak/vector_getter.hpp>
 
 #include <vector>
 #include <memory>
@@ -32,6 +33,9 @@ namespace valunpak
 			key_array::const_iterator end() const;
 		};
 
+		using entry_map = std::map<std::filesystem::path, std::unique_ptr<file_entry_pair>>;
+		VALUNPAK_MAP_GETTER(pak_filesystem, entry_map, m_entries) entries;
+
 		static key_getter keys;
 		friend struct key_getter;
 	private:
@@ -39,7 +43,7 @@ namespace valunpak
 
 		std::filesystem::path m_root;
 		std::vector<std::shared_ptr<pak_file>> m_files;
-		std::map<std::filesystem::path, std::unique_ptr<file_entry_pair>> m_entries;
+		entry_map m_entries;
 
 		bool add(std::string_view a_file_name, bin_file::read_mode_type a_read_mode = bin_file::read_mode_type::stream) noexcept;
 	};

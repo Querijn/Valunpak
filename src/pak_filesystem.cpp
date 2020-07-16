@@ -7,7 +7,7 @@ namespace valunpak
 	pak_filesystem::key_array pak_filesystem::m_keys;
 	pak_filesystem::key_getter pak_filesystem::keys;
 
-	pak_filesystem::pak_filesystem() { }
+	pak_filesystem::pak_filesystem() : entries(this) { }
 	pak_filesystem::~pak_filesystem() { }
 
 	void pak_filesystem::open(const std::filesystem::path& a_root)
