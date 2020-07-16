@@ -41,7 +41,7 @@ namespace valunpak
 { \
 	if((exp) == false) \
 	{ \
-		printf("%s:%d -> Failed VALUNPAK_REQUIRE (%s)\n", __FILE__, __LINE__, #exp); \
+		printf("%s:%d -> Failed VALUNPAK_REQUIRE (%s)\n", __FILENAME__, __LINE__, #exp); \
 		debug_break(); \
 		return (ret); \
 	} \
