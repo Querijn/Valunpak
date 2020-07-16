@@ -1,7 +1,7 @@
 #pragma once
 
 #include <valunpak/config.hpp>
-#include <valunpak/ue4_bin_file.hpp>
+#include <valunpak/ue4_base.hpp>
 #include <valunpak/fnv1.hpp>
 
 #include <map>
@@ -9,10 +9,10 @@
 namespace valunpak
 {
 	class ue4_uexp;
-	class ue4_uobject : public ue4_bin_file
+	class ue4_uobject : public ue4_base
 	{
 	public:
-		bool open(ue4_uexp& a_parent, size_t& a_offset);
+		bool open(ue4_uexp& a_parent, size_t& a_offset, bool a_is_element = false);
 
 		class base_property
 		{
@@ -23,7 +23,7 @@ namespace valunpak
 
 	private:
 		void reset();
-		size_t read_internal();
+		size_t read_internal(bool a_is_element);
 
 		enum class read_tag_result_type
 		{
@@ -32,7 +32,7 @@ namespace valunpak
 			no_entry,
 		};
 
-		enum class property_type
+		enum class property_type : u64
 		{
 			byte_property = fnv("ByteProperty"),
 			bool_property = fnv("BoolProperty"),

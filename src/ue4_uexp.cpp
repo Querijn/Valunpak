@@ -2,6 +2,7 @@
 #include <valunpak/ue4_utexture2d.hpp>
 #include <valunpak/ue4_uobject.hpp>
 #include <valunpak/ue4_uasset.hpp>
+#include <valunpak/ue4_base.hpp>
 
 #include <cassert>
 
@@ -13,6 +14,10 @@ namespace valunpak
 
 	ue4_uexp::ue4_uexp(ue4_uasset& a_uasset, ue4_bin_file* a_ubulk) :
 		files(this), m_uasset(&a_uasset), m_ubulk(a_ubulk)
+	{
+	}
+
+	ue4_uexp::~ue4_uexp()
 	{
 	}
 
@@ -81,9 +86,8 @@ namespace valunpak
 		// export all files
 		for (auto& exp : m_uasset->m_exports)
 		{
-			static int i = 0; if (++i == 4) debug_break();
-
 			size_t offset = exp.serial_offset - m_uasset->header_size;
+			size_t start_offset = offset;
 			assert(exp.class_index != 0);
 
 			// Indicate file type
@@ -115,7 +119,7 @@ namespace valunpak
 			else
 				parse_object(offset);
 
-			assert((exp.serial_offset - m_uasset->header_size) + exp.serial_size == offset);
+			VALUNPAK_REQUIRE(exp.serial_size == offset - start_offset);
 		}
 
 		return true;

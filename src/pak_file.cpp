@@ -56,10 +56,9 @@ namespace valunpak
 	bool pak_file::open(std::string_view a_file_name, bin_file::read_mode_type a_read_mode) noexcept
 	{
 		m_info = nullptr;
-		if (bin_file::open(a_file_name, a_read_mode) == false)
-			return false;
+		VALUNPAK_REQUIRE(bin_file::open(a_file_name, a_read_mode));
 
-		if (read_info() == false)
+		if (read_info() == false) // Not a pak file. This is fine for specific files (CEF.PAK for instance)
 			return false;
 
 		if (m_info->encrypted_index == false)
@@ -67,8 +66,7 @@ namespace valunpak
 
 		size_t offset = m_info->index_offset;
 		std::vector<u8> index_buffer;
-		if (read_array(index_buffer, m_info->index_size, offset) == false)
-			return false;
+		VALUNPAK_REQUIRE(read_array(index_buffer, m_info->index_size, offset));
 
 		// Setup AES
 		for (auto& key : pak_filesystem::keys)
@@ -80,16 +78,17 @@ namespace valunpak
 			if (m_info->version >= version_type::path_hash_index)
 			{
 				debug_break(); // TODO: Implement
-				if (!read_index(index_buffer.data(), index_buffer.size()))
-					return false;
+				VALUNPAK_REQUIRE(!read_index(index_buffer.data(), index_buffer.size()));
 			}
 			else
 			{
-				if (read_legacy_index(index_buffer.data(), index_buffer.size()) == false)
-					return false;
+				VALUNPAK_REQUIRE(read_legacy_index(index_buffer.data(), index_buffer.size()));
 			}
+
 			return true;
 		}
+
+		return false;
 	}
 
 	bool pak_file::read_legacy_index(const u8* a_index_data, size_t a_index_size)
@@ -154,6 +153,7 @@ namespace valunpak
 
 	bool pak_file::read_index(const u8* a_index_buffer, size_t a_size)
 	{
+		debug_break(); // TODO: Implement
 		return false;
 	}
 	

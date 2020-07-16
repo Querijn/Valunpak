@@ -1,7 +1,7 @@
 #pragma once
 
 #include <valunpak/config.hpp>
-#include <valunpak/ue4_bin_file.hpp>
+#include <valunpak/ue4_base.hpp>
 #include <valunpak/ue4_uobject.hpp>
 #include <valunpak/ue4_bulkdata.hpp>
 #include <valunpak/vector_getter.hpp>
@@ -9,11 +9,14 @@
 namespace valunpak
 {
 	class ue4_uexp;
-	class ue4_utexture2d : public ue4_bin_file
+	class ue4_utexture2d : public ue4_base
 	{
 	public:
+		ue4_utexture2d();
+
 		bool open(ue4_uexp& a_uexp, ue4_bin_file* a_ubulk, size_t& a_offset) noexcept;
 		bool to_file(const char* a_file_name) const noexcept override;
+		bool is_texture() const override { return true; }
 
 		// Doesn't match code format due to string compatibility
 		enum class pixel_format

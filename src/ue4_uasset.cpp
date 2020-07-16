@@ -73,17 +73,8 @@ namespace valunpak
 		if (index < m_names.size())
 			return m_names[index];
 
-		debug_break(); // TODO: Make an assert
+		VALUNPAK_REQUIRE(false);
 		return "";
-	}
-
-	const ue4_uasset::package_export& ue4_uasset::get_export(size_t a_index) const
-	{
-		if (a_index < m_exports.size())
-			return m_exports[a_index];
-
-		debug_break(); // TODO: Make an assert
-		return ue4_uasset::package_export();
 	}
 	
 	bool ue4_uasset::package_version_header::is_valid() const

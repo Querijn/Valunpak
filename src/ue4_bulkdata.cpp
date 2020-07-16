@@ -21,6 +21,16 @@ namespace valunpak
 		return true;
 	}
 
+	const u8* ue4_bulkdata::data() const
+	{
+		return m_data.data();
+	}
+
+	size_t ue4_bulkdata::size() const
+	{
+		return m_data.size();
+	}
+
 	void ue4_bulkdata::reset()
 	{
 		memset(&m_header, 0, sizeof(m_header));

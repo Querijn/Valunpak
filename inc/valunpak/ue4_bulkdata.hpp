@@ -10,6 +10,9 @@ namespace valunpak
 	public:
 		bool open(ue4_bin_file& a_parent, size_t& a_offset) noexcept;
 
+		const u8* data() const;
+		size_t size() const;
+
 		enum flag_type : i32
 		{
 			none = 0,
