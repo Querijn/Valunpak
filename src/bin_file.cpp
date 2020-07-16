@@ -103,6 +103,7 @@ namespace valunpak
 
 		bool get_data(u8* a_buffer, size_t a_size, size_t& a_offset) override
 		{
+			VALUNPAK_REQUIRE(a_buffer);
 			u8* source = data.data() + a_offset;
 			u8* result = (u8*)memcpy(a_buffer, source, a_size);
 
