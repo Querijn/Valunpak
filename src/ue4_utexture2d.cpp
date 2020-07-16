@@ -83,8 +83,17 @@ namespace valunpak
 		case fnv("PF_ETC2_R11_EAC"): return ue4_utexture2d::pixel_format::PF_ETC2_R11_EAC;
 		case fnv("PF_ETC2_RG11_EAC"): return ue4_utexture2d::pixel_format::PF_ETC2_RG11_EAC;
 		case fnv("PF_MAX"): return ue4_utexture2d::pixel_format::PF_MAX;
+		
+		default:
+			debug_break();
+			return ue4_utexture2d::pixel_format::PF_Unknown;
 		}
 	};
+
+	ue4_utexture2d::ue4_utexture2d() :
+		platform_data(this)
+	{
+	}
 
 	bool ue4_utexture2d::open(ue4_uexp& a_uexp, ue4_bin_file* a_ubulk, size_t& a_offset) noexcept
 	{
@@ -102,6 +111,14 @@ namespace valunpak
 
 		a_offset += offset;
 		return true;
+	}
+
+	bool ue4_utexture2d::to_file(const char* a_file_name) const noexcept
+	{
+		VALUNPAK_REQUIRE(m_platform_data.empty() == false);
+		
+		const auto& bulk = m_platform_data[0].mips[0].data;
+		return to_file_internal(a_file_name, bulk.data(), bulk.size());
 	}
 
 	void ue4_utexture2d::reset()
@@ -147,7 +164,7 @@ namespace valunpak
 				elem.mips.push_back(mip);
 			}
 
-			platform_data.push_back(elem);
+			m_platform_data.push_back(elem);
 			a_offset += sizeof(i32);
 		}
 

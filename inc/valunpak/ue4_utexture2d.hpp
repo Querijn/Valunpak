@@ -4,6 +4,7 @@
 #include <valunpak/ue4_bin_file.hpp>
 #include <valunpak/ue4_uobject.hpp>
 #include <valunpak/ue4_bulkdata.hpp>
+#include <valunpak/vector_getter.hpp>
 
 namespace valunpak
 {
@@ -12,6 +13,7 @@ namespace valunpak
 	{
 	public:
 		bool open(ue4_uexp& a_uexp, ue4_bin_file* a_ubulk, size_t& a_offset) noexcept;
+		bool to_file(const char* a_file_name) const noexcept override;
 
 		// Doesn't match code format due to string compatibility
 		enum class pixel_format
@@ -127,10 +129,13 @@ namespace valunpak
 			i32 first_mip_to_serialise;
 		};
 
+		using platform_data_array = std::vector<platform_data_element>;
+		VALUNPAK_VECTOR_GETTER(ue4_utexture2d, platform_data_array, m_platform_data) platform_data;
+
 	private:
 		ue4_uobject m_object;
 		header m_header;
-		std::vector<platform_data_element> platform_data;
+		platform_data_array m_platform_data;
 		
 		void reset();
 		bool read_internal(ue4_uexp& a_uexp, ue4_bin_file* a_ubulk, size_t& a_offset);
