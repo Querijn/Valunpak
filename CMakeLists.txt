@@ -10,7 +10,7 @@ function(ADD_SRC folder inc src)
 endfunction(ADD_SRC)
 
 # Local includes
-include_directories("ext" "inc" "src")
+include_directories("ext" "ext/s3tc" "inc" "src")
 
 # Crypto files
 ADD_SRC(Crypto\\AES\\Rijndael		"ext/rijndael/rijndael.hpp"				"ext/rijndael/rijndael.cpp")
@@ -21,6 +21,7 @@ ADD_SRC(Crypto\\FNV1				"inc/valunpak/fnv1.hpp"					"src/fnv1.cpp")
 # Utility 
 ADD_SRC(Utility\\Json				"inc/valunpak/json_writer.hpp"			"src/json_writer.cpp")
 ADD_SRC(Utility\\VectorGetter		"inc/valunpak/vector_getter.hpp"		"")
+ADD_SRC(Utility\\DXT				"ext/s3tc/s3tc.h"						"ext/s3tc/s3tc.cpp")
 
 # Unreal files
 ADD_SRC(Unreal\\Bin					"inc/valunpak/ue4_bin_file.hpp"			"src/ue4_bin_file.cpp")
