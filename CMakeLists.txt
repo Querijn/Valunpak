@@ -25,6 +25,7 @@ ADD_SRC(Utility\\DXT				"ext/s3tc/s3tc.h"						"ext/s3tc/s3tc.cpp")
 
 # Unreal files
 ADD_SRC(Unreal\\Bin					"inc/valunpak/ue4_bin_file.hpp"			"src/ue4_bin_file.cpp")
+ADD_SRC(Unreal\\Base				"inc/valunpak/ue4_base.hpp"				"src/ue4_base.cpp")
 ADD_SRC(Unreal\\Uasset				"inc/valunpak/ue4_uasset.hpp"			"src/ue4_uasset.cpp")
 ADD_SRC(Unreal\\Uobject				"inc/valunpak/ue4_uobject.hpp"			"src/ue4_uobject.cpp")
 ADD_SRC(Unreal\\UTexture2D			"inc/valunpak/ue4_utexture2d.hpp"		"src/ue4_utexture2d.cpp")
