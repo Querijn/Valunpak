@@ -184,6 +184,15 @@ namespace valunpak
 		m_impl = std::make_shared<sub_file_impl>(a_reader.m_impl, a_offset);
 		return true;
 	}
+
+	bool bin_file::to_file(const char* a_file_name) const noexcept
+	{
+		size_t size = m_impl->get_size();
+		std::vector<u8> bytes(size);
+		size_t offset = 0;
+		VALUNPAK_REQUIRE(m_impl->get_data(bytes.data(), size, offset));
+		return to_file_internal(a_file_name, bytes.data(), offset);
+	}
 	
 	bool bin_file::read_buffer(char* a_buffer, size_t a_length, size_t& a_offset) const
 	{
@@ -198,6 +207,13 @@ namespace valunpak
 	bool bin_file::find_buffer(const u8* a_buffer, size_t a_size, size_t& a_offset) const
 	{
 		return m_impl->find_buffer(a_buffer, a_size, a_offset);
+	}
+
+	bool bin_file::to_file_internal(const char* a_file_name, const u8* a_buffer, size_t a_size) const noexcept
+	{
+		std::ofstream output_file(a_file_name, std::ofstream::binary);
+		output_file.write((char*)a_buffer, a_size);
+		return output_file.good();
 	}
 
 	bool bin_file::read_string(std::string& a_string, size_t a_size, size_t& a_offset) const
