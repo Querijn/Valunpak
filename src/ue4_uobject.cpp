@@ -433,11 +433,12 @@ namespace valunpak
 			VALUNPAK_REQUIRE(offset - start_offset == tag.size);
 		}
 
-		i32 has_guid;
-		VALUNPAK_REQUIRE_RET(read(has_guid, offset), 0);
-		if (!a_is_element && has_guid)
+		if (!a_is_element)
 		{
-			offset += sizeof(i32) * 4;
+			i32 has_guid;
+			VALUNPAK_REQUIRE_RET(read(has_guid, offset), 0);
+			if (has_guid)
+				offset += sizeof(i32) * 4;
 		}
 		
 		return offset;
