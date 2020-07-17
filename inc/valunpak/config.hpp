@@ -53,3 +53,4 @@ while(0)
 
 #pragma warning(disable: 4201) // Nameless structs are fine imo
 #pragma warning(disable: 4201) // Condition is constant
+#pragma warning(disable: 4369) // Issues with using hashes as enum values
