@@ -98,28 +98,30 @@ namespace valunpak
 		);
 	}
 
-	struct bool_property : public ue4_uobject::base_property
-	{
-		u8 value;
-	};
-
-	struct byte_property : public ue4_uobject::base_property
+	struct byte_base_property : public ue4_uobject::base_property
 	{
 		std::string name;
-		std::string value;
 	};
 
-	struct name_property : public ue4_uobject::base_property
-	{
-		std::string value;
-	};
+	struct byte_property		: public byte_base_property				{ std::string value; };
+	struct byte_array_property	: public byte_base_property				{ u8 value; };
+
+	struct bool_property		: public ue4_uobject::base_property		{ u8 value; };
+	struct name_property		: public ue4_uobject::base_property		{ std::string value; };
+	struct float_property		: public ue4_uobject::base_property		{ float value; };
+	struct int_property			: public ue4_uobject::base_property		{ i32 value; };
 
 	struct object_property : public ue4_uobject::base_property
 	{
-		ue4_uasset::package_index index;
+		ue4_uasset::package_index value;
 	};
 
 	struct array_property : public ue4_uobject::base_property
+	{
+		std::string name;
+	};
+
+	struct set_property : public ue4_uobject::base_property
 	{
 		std::string name;
 	};
@@ -170,7 +172,7 @@ namespace valunpak
 		m_props.clear();
 	}
 
-	ue4_uobject::read_tag_result_type ue4_uobject::read_tag(ue4_uobject::property_tag& a_tag, size_t& a_offset)
+	ue4_uobject::read_tag_result_type ue4_uobject::read_tag(ue4_uobject::property_tag& a_tag, size_t& a_offset, property_read_mode a_read_mode)
 	{
 		VALUNPAK_REQUIRE_RET(m_uexp->read_table_name(a_tag.name, *this, a_offset), read_tag_result_type::failed);
 		if (a_tag.name == "None")
@@ -208,11 +210,16 @@ namespace valunpak
 			}
 
 			case property_type::byte_property:
-			case property_type::enum_property:
 			{
-				std::unique_ptr<byte_property> bool_prop = std::make_unique<byte_property>();
-				VALUNPAK_REQUIRE_RET(m_uexp->read_table_name(bool_prop->name, *this, a_offset), read_tag_result_type::failed);
-				prop = std::move(bool_prop);
+				std::unique_ptr<byte_base_property> byte_prop;
+				if (a_read_mode == property_read_mode::default_mode)
+					byte_prop = std::make_unique<byte_property>();
+				else if (a_read_mode == property_read_mode::array_mode)
+					byte_prop = std::make_unique<byte_array_property>();
+				else
+					VALUNPAK_REQUIRE_RET(false, read_tag_result_type::failed); // TODO
+				VALUNPAK_REQUIRE_RET(m_uexp->read_table_name(byte_prop->name, *this, a_offset), read_tag_result_type::failed);
+				prop = std::move(byte_prop);
 				break;
 			}
 
@@ -235,6 +242,12 @@ namespace valunpak
 				VALUNPAK_REQUIRE_RET(m_uexp->read_table_name(map_prop->key_name, *this, a_offset), read_tag_result_type::failed);
 				VALUNPAK_REQUIRE_RET(m_uexp->read_table_name(map_prop->value_name, *this, a_offset), read_tag_result_type::failed);
 				prop = std::move(map_prop);
+				break;
+			}
+
+			case property_type::enum_property:
+			{
+				VALUNPAK_REQUIRE_RET(false, read_tag_result_type::failed); // TODO
 				break;
 			}
 
@@ -328,23 +341,36 @@ namespace valunpak
 		return true;
 	}
 
-	bool ue4_uobject::read_property(ue4_uobject::property_tag& a_tag, size_t& a_offset)
+	bool ue4_uobject::read_property(ue4_uobject::property_tag& a_tag, property_type a_type, size_t& a_offset, property_read_mode a_read_mode)
 	{
-		switch (a_tag.type)
+#define DEFAULT_VAL_CASE(a_type) case property_type::a_type:\
+		{\
+			auto prop = (a_type*)a_tag.prop;\
+			VALUNPAK_REQUIRE(read(prop->value, a_offset));\
+			break;\
+		}
+
+		switch (a_type)
 		{
 		case property_type::struct_property:
 			VALUNPAK_REQUIRE(read_struct_property(a_tag, a_offset));
 			break;
 
-		// These have been read in the tag already.
 		case property_type::bool_property:
 			break;
 
 		case property_type::enum_property:
 		case property_type::byte_property:
 		{
-			auto prop = (byte_property*)a_tag.prop;
-			VALUNPAK_REQUIRE(m_uexp->read_table_name(prop->value, *this, a_offset));
+			if (a_read_mode == property_read_mode::default_mode)
+			{
+				auto prop = (byte_property*)a_tag.prop;
+				VALUNPAK_REQUIRE(m_uexp->read_table_name(prop->value, *this, a_offset));
+			}
+			else
+			{
+				VALUNPAK_REQUIRE(false); // TODO
+			}
 			break;
 		}
 
@@ -354,18 +380,32 @@ namespace valunpak
 			VALUNPAK_REQUIRE(m_uexp->read_table_name(prop->value, *this, a_offset));
 			break;
 		}
-		
-		case property_type::object_property:
+
+		case property_type::array_property:
 		{
-			auto prop = (object_property*)a_tag.prop;
-			VALUNPAK_REQUIRE(read(prop->index, a_offset));
+			auto prop = (array_property*)a_tag.prop;
+
+			i32 length;
+			VALUNPAK_REQUIRE(read(length, a_offset));
+
+			property_tag tag;
+			auto inner_type = (property_type)fnv(prop->name.c_str());
+			if (inner_type == property_type::struct_property)
+				VALUNPAK_REQUIRE(read_tag(tag, a_offset, property_read_mode::array_mode) == read_tag_result_type::succeeded);
+			for (int i = 0; i < length; i++)
+				VALUNPAK_REQUIRE(read_property(tag, inner_type, a_offset, property_read_mode::array_mode));
 			break;
 		}
 
-		case property_type::array_property:
+
+		DEFAULT_VAL_CASE(object_property);
+		DEFAULT_VAL_CASE(float_property);
+		DEFAULT_VAL_CASE(int_property);
+
 		case property_type::set_property:
 		case property_type::map_property:
 		default:
+			size_t real_offset = get_debug_offset(a_offset);
 			VALUNPAK_REQUIRE(false);
 			return false;
 
@@ -381,14 +421,15 @@ namespace valunpak
 		while (true)
 		{
 			property_tag tag;
-			auto tag_result = read_tag(tag, offset);
+			size_t real_offset = get_debug_offset(offset);
+			auto tag_result = read_tag(tag, offset, property_read_mode::default_mode);
 			if (tag_result == read_tag_result_type::failed)
 				return 0;
 			else if (tag_result == read_tag_result_type::no_entry)
 				break; // We're done
 
 			size_t start_offset = offset;
-			VALUNPAK_REQUIRE_RET(read_property(tag, offset), 0);
+			VALUNPAK_REQUIRE_RET(read_property(tag, tag.type, offset, property_read_mode::default_mode), 0);
 			VALUNPAK_REQUIRE(offset - start_offset == tag.size);
 		}
 

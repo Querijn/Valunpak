@@ -119,7 +119,7 @@ namespace valunpak
 			else
 				parse_object(offset);
 
-			VALUNPAK_REQUIRE(exp.serial_size == offset - start_offset);
+			// VALUNPAK_REQUIRE(start_offset + exp.serial_size == offset);
 		}
 
 		return true;

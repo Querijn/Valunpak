@@ -70,10 +70,16 @@ namespace valunpak
 			base_property* prop;
 		};
 
-		read_tag_result_type read_tag(property_tag& a_tag, size_t& a_offset);
+		enum class property_read_mode
+		{
+			default_mode,
+			array_mode
+		};
+
+		read_tag_result_type read_tag(property_tag& a_tag, size_t& a_offset, property_read_mode a_read_mode);
 
 		bool read_struct_property(property_tag& a_tag, size_t& a_offset);
-		bool read_property(property_tag& a_tag, size_t& a_offset);
+		bool read_property(property_tag& a_tag, property_type a_type, size_t& a_offset, property_read_mode a_read_mode);
 
 		ue4_uexp* m_uexp = nullptr;
 		std::map<std::string, std::unique_ptr<base_property>> m_props;
