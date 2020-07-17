@@ -32,6 +32,7 @@ namespace valunpak
 		bool read_buffer(char* a_buffer, size_t a_length, size_t& a_offset) const;
 		bool read_string(std::string& a_string, size_t a_size, size_t& a_offset) const;
 		size_t get_size() const;
+		size_t get_debug_offset(size_t a_offset) const;
 
 		bool find_buffer(const u8* a_buffer, size_t a_size, size_t& a_offset) const;
 

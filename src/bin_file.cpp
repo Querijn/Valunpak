@@ -17,6 +17,7 @@ namespace valunpak
 		virtual bool get_data(u8* a_buffer, size_t a_size, size_t& a_offset) = 0;
 
 		virtual size_t get_size() const = 0;
+		virtual size_t get_debug_offset(size_t offset) const = 0;
 
 		bool find_buffer(const u8* a_buffer, size_t a_size, size_t& a_offset)
 		{
@@ -76,6 +77,11 @@ namespace valunpak
 			return size;
 		}
 
+		size_t get_debug_offset(size_t offset) const override
+		{
+			return offset;
+		}
+
 		std::ifstream stream;
 		size_t size;
 	};
@@ -119,6 +125,11 @@ namespace valunpak
 			return size;
 		}
 
+		size_t get_debug_offset(size_t offset) const override
+		{
+			return offset;
+		}
+
 		std::vector<u8> data;
 		size_t size;
 	};
@@ -145,6 +156,11 @@ namespace valunpak
 		size_t get_size() const override
 		{
 			return parent->get_size() - base_offset;
+		}
+
+		size_t get_debug_offset(size_t offset) const override
+		{
+			return base_offset + parent->get_debug_offset(offset);
 		}
 
 		std::shared_ptr<base_file_impl> parent;
@@ -203,6 +219,11 @@ namespace valunpak
 	size_t bin_file::get_size() const
 	{
 		return m_impl->get_size();
+	}
+
+	size_t bin_file::get_debug_offset(size_t a_offset) const
+	{
+		return m_impl->get_debug_offset(a_offset);
 	}
 
 	bool bin_file::find_buffer(const u8* a_buffer, size_t a_size, size_t& a_offset) const
