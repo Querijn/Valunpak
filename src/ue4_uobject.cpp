@@ -17,9 +17,9 @@ namespace valunpak
 			gameplay_tag_container = fnv("GameplayTagContainer"),
 			nav_agent_selector = fnv("NavAgentSelector"),
 			quat = fnv("Quat"),
-			vector_4 = fnv("Vector4"),
-			vector_2d = fnv("Vector2D"),
-			box_2d = fnv("Box2D"),
+			vector4 = fnv("Vector4"),
+			vector2d = fnv("Vector2D"),
+			box2d = fnv("Box2D"),
 			box = fnv("Box"),
 			vector = fnv("Vector"),
 			rotator = fnv("Rotator"),
@@ -63,6 +63,11 @@ namespace valunpak
 		struct guid_element : base_struct_value_element
 		{
 			i32 num[4];
+		};
+
+		struct vector_element : base_struct_value_element
+		{
+			float x, y, z;
 		};
 #pragma pack(pop)
 
@@ -285,20 +290,18 @@ namespace valunpak
 		{
 			default_case(int_point, int_point_element);
 			default_case(guid, guid_element);
+			default_case(vector, vector_element);
 
 		case struct_property::type::unknown:
-		case struct_property::type::int_point:
 		case struct_property::type::level_sequence_object_reference_map:
 		case struct_property::type::gameplay_tag_container:
 		case struct_property::type::nav_agent_selector:
 		case struct_property::type::quat:
-		case struct_property::type::vector_4:
-		case struct_property::type::vector_2d:
-		case struct_property::type::box_2d:
+		case struct_property::type::vector4:
+		case struct_property::type::vector2d:
+		case struct_property::type::box2d:
 		case struct_property::type::box:
-		case struct_property::type::vector:
 		case struct_property::type::rotator:
-		case struct_property::type::guid:
 		case struct_property::type::soft_object_path:
 		case struct_property::type::soft_class_path:
 		case struct_property::type::color:
