@@ -273,6 +273,48 @@ namespace valunpak
 			default_case(int_point, int_point_element);
 			default_case(guid, guid_element);
 
+		case struct_property::type::unknown:
+		case struct_property::type::int_point:
+		case struct_property::type::level_sequence_object_reference_map:
+		case struct_property::type::gameplay_tag_container:
+		case struct_property::type::nav_agent_selector:
+		case struct_property::type::quat:
+		case struct_property::type::vector_4:
+		case struct_property::type::vector_2d:
+		case struct_property::type::box_2d:
+		case struct_property::type::box:
+		case struct_property::type::vector:
+		case struct_property::type::rotator:
+		case struct_property::type::guid:
+		case struct_property::type::soft_object_path:
+		case struct_property::type::soft_class_path:
+		case struct_property::type::color:
+		case struct_property::type::linear_color:
+		case struct_property::type::simple_curve_key:
+		case struct_property::type::rich_curve_key:
+		case struct_property::type::frame_number:
+		case struct_property::type::smart_name:
+		case struct_property::type::per_platform_float:
+		case struct_property::type::per_platform_int:
+		case struct_property::type::date_time:
+		case struct_property::type::timespan:
+		case struct_property::type::movie_scene_track_identifier:
+		case struct_property::type::movie_scene_segment_identifier:
+		case struct_property::type::movie_scene_sequence_id:
+		case struct_property::type::movie_scene_segment:
+		case struct_property::type::section_evaluation_data_tree:
+		case struct_property::type::movie_scene_frame_range:
+		case struct_property::type::movie_scene_evaluation_key:
+		case struct_property::type::movie_scene_float_value:
+		case struct_property::type::movie_scene_float_channel:
+		case struct_property::type::movie_scene_evaluation_template:
+		case struct_property::type::skeletal_mesh_sampling_lod_built_data:
+		case struct_property::type::vector_material_input:
+		case struct_property::type::color_material_input:
+		case struct_property::type::expression_input:
+			VALUNPAK_REQUIRE(false); // TODO
+			break;
+
 		default:
 		{
 			auto t = std::make_unique<struct_property::uobject_element>();
