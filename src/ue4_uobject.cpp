@@ -259,10 +259,7 @@ namespace valunpak
 			}
 		}
 
-		if (prop == nullptr) // No special type
-			prop = std::make_unique<base_property>();
-
-		VALUNPAK_REQUIRE_RET(read(prop->has_property_guid, a_offset), read_tag_result_type::failed);
+		VALUNPAK_REQUIRE_RET(prop && read(prop->has_property_guid, a_offset), read_tag_result_type::failed);
 
 		if (prop->has_property_guid)
 			VALUNPAK_REQUIRE_RET(read_array(prop->property_guid, 4, a_offset), read_tag_result_type::failed);
