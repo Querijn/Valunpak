@@ -4,8 +4,6 @@
 #include <valunpak/ue4_uasset.hpp>
 #include <valunpak/ue4_base.hpp>
 
-#include <cassert>
-
 #include <debugbreak.h>
 
 namespace valunpak
@@ -88,7 +86,7 @@ namespace valunpak
 		{
 			size_t offset = exp.serial_offset - m_uasset->header_size;
 			size_t start_offset = offset;
-			assert(exp.class_index != 0);
+			VALUNPAK_REQUIRE(exp.class_index != 0);
 
 			// Indicate file type
 			const std::string* type_name = nullptr;
