@@ -44,6 +44,6 @@ ADD_SRC(App							"inc/valunpak/config.hpp"				"src/main.cpp")
 
 add_executable(valunpak ${VALUNPAK_SOURCES})
 set_target_properties(valunpak PROPERTIES 
-					VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+					# VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 					CXX_STANDARD 17
 					CXX_EXTENSIONS OFF)
