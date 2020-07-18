@@ -5,9 +5,11 @@
 
 namespace valunpak
 {
+	class ue4_ubulk;
 	class ue4_bulkdata : public ue4_bin_file
 	{
 	public:
+		ue4_bulkdata(ue4_ubulk* a_ubulk) : m_ubulk(a_ubulk) {}
 		bool open(ue4_bin_file& a_parent, size_t& a_offset) noexcept;
 
 		const u8* data() const;
@@ -41,14 +43,15 @@ namespace valunpak
 		{
 			flag_type flags;
 			i32 element_count;
-			i32 BulkDataSizeOnDisk;
-			i64 BulkDataOffsetInFile; 
+			i32 size_on_disk;
+			i64 offset_in_file;
 		};
 #pragma pack(pop)
 
 	private:
 		header m_header;
 		std::vector<u8> m_data;
+		ue4_ubulk* m_ubulk;
 
 		void reset();
 		size_t read_internal();

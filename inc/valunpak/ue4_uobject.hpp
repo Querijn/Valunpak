@@ -6,6 +6,8 @@
 
 #include <map>
 
+#include <valunpak/no_optimise.hpp>
+
 namespace valunpak
 {
 	class ue4_uexp;
@@ -61,6 +63,8 @@ namespace valunpak
 
 		struct property_tag
 		{
+			property_tag(property_type a_type) : type(a_type) {}
+			property_tag() {}
 			std::string name;
 			property_type type;
 
@@ -76,10 +80,11 @@ namespace valunpak
 			array_mode
 		};
 
-		read_tag_result_type read_tag(property_tag& a_tag, size_t& a_offset, property_read_mode a_read_mode);
+		read_tag_result_type read_tag(property_tag& a_tag, size_t& a_offset, property_read_mode a_read_mode, bool a_should_read = true);
 
 		bool read_struct_property(property_tag& a_tag, size_t& a_offset);
 		bool read_property(property_tag& a_tag, property_type a_type, size_t& a_offset, property_read_mode a_read_mode);
+		std::unique_ptr<base_property> make_property(property_type a_type);
 
 		ue4_uexp* m_uexp = nullptr;
 		std::map<std::string, std::unique_ptr<base_property>> m_props;

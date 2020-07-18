@@ -14,7 +14,7 @@ namespace valunpak
 	public:
 		ue4_utexture2d();
 
-		bool open(ue4_uexp& a_uexp, ue4_bin_file* a_ubulk, size_t& a_offset) noexcept;
+		bool open(ue4_uexp& a_uexp, ue4_ubulk* a_ubulk, size_t& a_offset) noexcept;
 		bool to_file(const char* a_file_name) const noexcept override;
 		bool is_texture() const override { return true; }
 
@@ -119,6 +119,8 @@ namespace valunpak
 
 		struct platform_mipmap
 		{
+			platform_mipmap(ue4_ubulk* a_ubulk) : data(a_ubulk) {}
+
 			i32 is_cooked;
 			ue4_bulkdata data;
 			platform_mip_map_footer sizes;
@@ -141,6 +143,6 @@ namespace valunpak
 		platform_data_array m_platform_data;
 		
 		void reset();
-		bool read_internal(ue4_uexp& a_uexp, ue4_bin_file* a_ubulk, size_t& a_offset);
+		bool read_internal(ue4_uexp& a_uexp, ue4_ubulk* a_ubulk, size_t& a_offset);
 	};
 }

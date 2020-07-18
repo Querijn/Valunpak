@@ -95,7 +95,7 @@ namespace valunpak
 	{
 	}
 
-	bool ue4_utexture2d::open(ue4_uexp& a_uexp, ue4_bin_file* a_ubulk, size_t& a_offset) noexcept
+	bool ue4_utexture2d::open(ue4_uexp& a_uexp, ue4_ubulk* a_ubulk, size_t& a_offset) noexcept
 	{
 		reset();
 		VALUNPAK_REQUIRE(ue4_bin_file::open(a_uexp, a_offset));
@@ -126,7 +126,7 @@ namespace valunpak
 		memset(&m_header, 0, sizeof(m_header));
 	}
 
-	bool ue4_utexture2d::read_internal(ue4_uexp& a_uexp, ue4_bin_file* a_ubulk, size_t& a_offset)
+	bool ue4_utexture2d::read_internal(ue4_uexp& a_uexp, ue4_ubulk* a_ubulk, size_t& a_offset)
 	{
 		VALUNPAK_REQUIRE(read(m_header, a_offset));
 		if (!m_header.is_cooked)
@@ -156,7 +156,7 @@ namespace valunpak
 			VALUNPAK_REQUIRE(read(mip_count, a_offset));
 			for (i32 i = 0; i < mip_count; i++)
 			{
-				platform_mipmap mip;
+				platform_mipmap mip(a_ubulk);
 				VALUNPAK_REQUIRE(read(mip.is_cooked, a_offset));
 				VALUNPAK_REQUIRE(mip.data.open(*this, a_offset));
 				VALUNPAK_REQUIRE(read(mip.sizes, a_offset));

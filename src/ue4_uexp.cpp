@@ -2,15 +2,18 @@
 #include <valunpak/ue4_utexture2d.hpp>
 #include <valunpak/ue4_uobject.hpp>
 #include <valunpak/ue4_uasset.hpp>
+#include <valunpak/ue4_ubulk.hpp>
 #include <valunpak/ue4_base.hpp>
 
 #include <debugbreak.h>
+
+#include <valunpak/no_optimise.hpp>
 
 namespace valunpak
 {
 	ue4_uexp::ue4_uexp() : files(this) {}
 
-	ue4_uexp::ue4_uexp(ue4_uasset& a_uasset, ue4_bin_file* a_ubulk) :
+	ue4_uexp::ue4_uexp(ue4_uasset& a_uasset, ue4_ubulk* a_ubulk) :
 		files(this), m_uasset(&a_uasset), m_ubulk(a_ubulk)
 	{
 	}
@@ -80,6 +83,14 @@ namespace valunpak
 	bool ue4_uexp::read_internal()
 	{
 		VALUNPAK_REQUIRE(m_uasset);
+
+		if (m_ubulk)
+		{
+			size_t ubulk_size = 0;
+			for (auto& exp : m_uasset->m_exports)
+				ubulk_size += exp.serial_size;
+			m_ubulk->set_bulk_offset(ubulk_size + m_uasset->header_size);
+		}
 
 		// export all files
 		for (auto& exp : m_uasset->m_exports)

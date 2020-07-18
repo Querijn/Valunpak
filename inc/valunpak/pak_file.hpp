@@ -11,10 +11,11 @@
 
 namespace valunpak
 {
+	class pak_filesystem;
 	class pak_file : public bin_file
 	{
 	public:
-		pak_file();
+		pak_file(pak_filesystem& a_parent);
 		~pak_file();
 
 		static const size_t compression_method_name_length = 32;
@@ -135,12 +136,16 @@ namespace valunpak
 		size_t get_file_size(const entry& a_entry) const;
 
 		std::filesystem::path get_mount_point() const;
+
+		friend class pak_filesystem;
 	private:
+
 		bool read_info();
 
 		bool read_legacy_index(const u8* a_index_buffer, size_t a_index_size);
 		bool read_index(const u8* a_index_buffer, size_t a_index_size);
 
+		pak_filesystem& m_fs;
 		std::shared_ptr<info> m_info = nullptr;
 		std::filesystem::path m_mount_point;
 		entry_map m_entries;

@@ -1,6 +1,7 @@
 #include <valunpak/ue4_bulkdata.hpp>
+#include <valunpak/ue4_ubulk.hpp>
 
-#include <debugbreak.h>
+#include "valunpak/no_optimise.hpp"
 
 namespace valunpak
 {
@@ -40,18 +41,18 @@ namespace valunpak
 	size_t ue4_bulkdata::read_internal()
 	{
 		size_t offset = 0;
-		if (read(m_header, offset) == false)
-			return false;
+		VALUNPAK_REQUIRE_RET(read(m_header, offset), 0);
+		if (m_header.element_count == 0)
+			return 0;
 
-		if (has_flag<flag_type::force_inline_payload>(m_header.flags) && m_header.element_count > 0)
+		if (has_flag<flag_type::force_inline_payload>(m_header.flags))
 		{
-			if (read_array(m_data, m_header.element_count, offset) == false)
-				return 0;
+			VALUNPAK_REQUIRE_RET(read_array(m_data, m_header.element_count, offset), 0);
 		}
-
-		if (has_flag<flag_type::payload_in_seperate_file>(m_header.flags))
+		else if (has_flag<flag_type::payload_in_seperate_file>(m_header.flags))
 		{
-			debug_break();
+			size_t offset = (i64)m_ubulk->get_bulk_offset() + (i64)m_header.offset_in_file;
+			VALUNPAK_REQUIRE_RET(m_ubulk && m_ubulk->read_array(m_data, m_header.element_count, offset), 0);
 		}
 
 		return offset;

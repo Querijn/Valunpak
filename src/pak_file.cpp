@@ -289,6 +289,6 @@ namespace valunpak
 		return m_mount_point;
 	}
 
-	pak_file::pak_file() {}
+	pak_file::pak_file(pak_filesystem& a_filesystem) : m_fs(a_filesystem) {}
 	pak_file::~pak_file() {}
 }

@@ -16,7 +16,6 @@ namespace valunpak
 		m_entries.clear();
 		m_files.clear();
 
-		valunpak::pak_file pak;
 		for (auto& dir_entry : fs::recursive_directory_iterator(a_root))
 		{
 			auto path = dir_entry.path();
@@ -45,13 +44,13 @@ namespace valunpak
 
 	bool pak_filesystem::add(std::string_view a_file_name, bin_file::read_mode_type a_read_mode) noexcept
 	{
-		static std::shared_ptr<pak_file> file = std::make_shared<pak_file>();
+		static std::shared_ptr<pak_file> file = std::make_shared<pak_file>(*this);
 		if (file->open(a_file_name, a_read_mode) == false)
 			return false;
 
 		m_files.push_back(file);
 		auto& pak = m_files.back();
-		file = std::make_shared<pak_file>(); // Generate new ptr for next entry
+		file = std::make_shared<pak_file>(*this); // Generate new ptr for next entry
 
 		fs::path root = fs::absolute(m_root);
 		fs::path mount_point = fs::relative(pak->get_mount_point(), root);

@@ -9,11 +9,12 @@ namespace valunpak
 {
 	class ue4_uasset;
 	class ue4_base;
+	class ue4_ubulk;
 	class ue4_uexp : public ue4_bin_file
 	{
 	public:
 		ue4_uexp();
-		ue4_uexp(ue4_uasset& a_uasset, ue4_bin_file* a_ubulk);
+		ue4_uexp(ue4_uasset& a_uasset, ue4_ubulk* a_ubulk);
 		~ue4_uexp();
 
 		virtual bool open(std::string_view a_file_name, read_mode_type a_read_mode = read_mode_type::stream) noexcept override;
@@ -25,12 +26,13 @@ namespace valunpak
 		VALUNPAK_VECTOR_GETTER(ue4_uexp, file_array, m_files) files;
 
 		const ue4_uasset& get_uasset() const { return *m_uasset; }
+		const ue4_ubulk* get_ubulk() const { return m_ubulk; }
 
 		friend class ue4_uobject;
 		friend class ue4_utexture2d;
 	private:
 		ue4_uasset* m_uasset = nullptr;
-		ue4_bin_file* m_ubulk = nullptr;
+		ue4_ubulk* m_ubulk = nullptr;
 		file_array m_files;
 
 		void reset();
