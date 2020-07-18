@@ -1,5 +1,6 @@
 #include <valunpak/ue4_uexp.hpp>
 #include <valunpak/ue4_utexture2d.hpp>
+#include <valunpak/ue4_usoundwave.hpp>
 #include <valunpak/ue4_uobject.hpp>
 #include <valunpak/ue4_uasset.hpp>
 #include <valunpak/ue4_ubulk.hpp>
@@ -121,7 +122,7 @@ namespace valunpak
 			else if (*type_name == "FontFace")
 				VALUNPAK_REQUIRE(false);
 			else if (*type_name == "SoundWave")
-				VALUNPAK_REQUIRE(false);
+				parse_soundwave(offset);
 			else if (*type_name == "StringTable")
 				VALUNPAK_REQUIRE(false);
 
@@ -132,6 +133,13 @@ namespace valunpak
 		}
 
 		return true;
+	}
+
+	void ue4_uexp::parse_soundwave(size_t& a_offset)
+	{
+		auto texture = std::make_unique<ue4_usoundwave>();
+		if (texture->open(*this, m_ubulk, a_offset))
+			m_files.push_back(std::move(texture));
 	}
 
 	void ue4_uexp::parse_texture(size_t& a_offset)

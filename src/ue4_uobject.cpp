@@ -150,45 +150,69 @@ namespace valunpak
 		std::unique_ptr<base_struct_value_element> value = nullptr;
 	};
 
-	std::string to_json(struct_property::int_point_element& a_int_point)
-	{
-		return to_json
-		({
-			{ "x", (i64)a_int_point.x },
-			{ "y", (i64)a_int_point.y }
-			});
-	}
-
-	std::string to_json(struct_property::guid_element& a_guid)
-	{
-		return to_json
-		(
-			std::to_string(a_guid.num[0]) + "-" +
-			std::to_string(a_guid.num[1]) + "-" +
-			std::to_string(a_guid.num[2]) + "-" +
-			std::to_string(a_guid.num[3])
-		);
-	}
-
 	struct byte_base_property : public ue4_uobject::base_property
 	{
 		std::string name;
 	};
 
-	struct byte_property		: public byte_base_property				{ std::string value; };
-	struct byte_array_property	: public byte_base_property				{ u8 value; };
+	struct byte_property : public byte_base_property
+	{ 
+		std::string value;
+	};
 
-	struct bool_property		: public ue4_uobject::base_property		{ u8 value; };
-	struct name_property		: public ue4_uobject::base_property		{ std::string value; };
-	struct float_property		: public ue4_uobject::base_property		{ float value; };
-	struct int_property			: public ue4_uobject::base_property		{ i32 value; };
+	struct byte_array_property	: public byte_base_property
+	{
+		u8 value;
+		bool is_boolean() const override { return true; }
+		bool get_bool_value(bool& a_out) const { a_out = value; return true; }
+	};
 
-	struct int16_property : public ue4_uobject::base_property { i16 value; };
-	struct int64_property : public ue4_uobject::base_property { i64 value; };
+	struct bool_property : public ue4_uobject::base_property
+	{
+		u8 value;
+		bool is_boolean() const override { return true; }
+		bool get_bool_value(bool& a_out) const { a_out = value; return true; }
+	};
 
-	struct uint16_property : public ue4_uobject::base_property { u16 value; };
-	struct uint32_property : public ue4_uobject::base_property { u32 value; };
-	struct uint64_property : public ue4_uobject::base_property { u64 value; };
+	struct name_property : public ue4_uobject::base_property
+	{
+		std::string value;
+	};
+
+	struct float_property : public ue4_uobject::base_property
+	{
+		float value;
+	};
+
+	struct int_property : public ue4_uobject::base_property
+	{
+		i32 value;
+	};
+
+	struct int16_property : public ue4_uobject::base_property
+	{
+		i16 value;
+	};
+
+	struct int64_property : public ue4_uobject::base_property
+	{
+		i64 value;
+	};
+
+	struct uint16_property : public ue4_uobject::base_property
+	{
+		u16 value;
+	};
+
+	struct uint32_property : public ue4_uobject::base_property
+	{
+		u32 value;
+	};
+
+	struct uint64_property : public ue4_uobject::base_property
+	{
+		u64 value;
+	};
 
 	struct object_property : public ue4_uobject::base_property
 	{
@@ -209,6 +233,7 @@ namespace valunpak
 	{
 		std::string key_name;
 		std::string value_name;
+		
 	};
 
 	bool ue4_uobject::open(ue4_uexp& a_uexp, size_t& a_offset)
@@ -244,6 +269,15 @@ namespace valunpak
 
 		a_offset += offset;
 		return true;
+	}
+
+	const ue4_uobject::base_property* ue4_uobject::get_prop(const char* a_name) const noexcept
+	{
+		auto index = m_props.find(a_name);
+		if (index == m_props.end())
+			return nullptr;
+
+		return index->second.get();
 	}
 
 	void ue4_uobject::reset()
@@ -606,5 +640,25 @@ namespace valunpak
 		}
 		
 		return offset;
+	}
+
+	std::string to_json(struct_property::int_point_element& a_int_point)
+	{
+		return to_json
+		({
+			{ "x", (i64)a_int_point.x },
+			{ "y", (i64)a_int_point.y }
+			});
+	}
+
+	std::string to_json(struct_property::guid_element& a_guid)
+	{
+		return to_json
+		(
+			std::to_string(a_guid.num[0]) + "-" +
+			std::to_string(a_guid.num[1]) + "-" +
+			std::to_string(a_guid.num[2]) + "-" +
+			std::to_string(a_guid.num[3])
+			);
 	}
 }

@@ -22,7 +22,12 @@ namespace valunpak
 		public:
 			bool has_property_guid;
 			u32 property_guid[4] = { 0 };
+
+			virtual bool is_boolean() const { return false; }
+			virtual bool get_bool_value(bool& a_out) const { a_out = false; return false; }
 		};
+
+		const base_property* get_prop(const char* a_name) const noexcept;
 
 	private:
 		void reset();

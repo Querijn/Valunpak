@@ -5,6 +5,12 @@
 
 namespace valunpak
 {
+	bool ue4_bulkdata::open(ue4_bin_file& a_parent, ue4_ubulk* a_ubulk, size_t& a_offset) noexcept
+	{
+		m_ubulk = a_ubulk;
+		return open(a_parent, a_offset);
+	}
+
 	bool ue4_bulkdata::open(ue4_bin_file& a_parent, size_t& a_offset) noexcept
 	{
 		reset();
@@ -30,6 +36,11 @@ namespace valunpak
 	size_t ue4_bulkdata::size() const
 	{
 		return m_data.size();
+	}
+
+	const std::vector<u8>& ue4_bulkdata::as_vector() const
+	{
+		return m_data;
 	}
 
 	void ue4_bulkdata::reset()

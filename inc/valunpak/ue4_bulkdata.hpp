@@ -9,11 +9,15 @@ namespace valunpak
 	class ue4_bulkdata : public ue4_bin_file
 	{
 	public:
+		ue4_bulkdata() : m_ubulk(nullptr) {}
 		ue4_bulkdata(ue4_ubulk* a_ubulk) : m_ubulk(a_ubulk) {}
+		bool open(ue4_bin_file& a_parent, ue4_ubulk* a_ubulk, size_t& a_offset) noexcept;
 		bool open(ue4_bin_file& a_parent, size_t& a_offset) noexcept;
 
 		const u8* data() const;
 		size_t size() const;
+
+		const std::vector<u8>& as_vector() const;
 
 		enum flag_type : i32
 		{
