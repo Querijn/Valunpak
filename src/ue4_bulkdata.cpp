@@ -1,8 +1,6 @@
 #include <valunpak/ue4_bulkdata.hpp>
 #include <valunpak/ue4_ubulk.hpp>
 
-#include "valunpak/no_optimise.hpp"
-
 namespace valunpak
 {
 	bool ue4_bulkdata::open(ue4_bin_file& a_parent, ue4_ubulk* a_ubulk, size_t& a_offset) noexcept

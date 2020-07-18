@@ -6,8 +6,6 @@
 
 #include <map>
 
-#include <valunpak/no_optimise.hpp>
-
 namespace valunpak
 {
 	class ue4_uexp;

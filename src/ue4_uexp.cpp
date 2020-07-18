@@ -8,8 +8,6 @@
 
 #include <debugbreak.h>
 
-#include <valunpak/no_optimise.hpp>
-
 namespace valunpak
 {
 	ue4_uexp::ue4_uexp() : files(this) {}
