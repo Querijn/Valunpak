@@ -102,18 +102,18 @@ namespace valunpak
 				parse_object(offset);
 			else if (*type_name == "Texture2D")
 				parse_texture(offset);
-			/*
+
 			else if (*type_name == "CurveTable")
-				type = file_type::curve_table;
+				VALUNPAK_REQUIRE(false);
 			else if (*type_name == "DataTable")
-				type = file_type::data_table;
+				VALUNPAK_REQUIRE(false);
 			else if (*type_name == "FontFace")
-				type = file_type::font_face;
+				VALUNPAK_REQUIRE(false);
 			else if (*type_name == "SoundWave")
-				type = file_type::sound_wave;
+				VALUNPAK_REQUIRE(false);
 			else if (*type_name == "StringTable")
-				type = file_type::string_table;
-			*/
+				VALUNPAK_REQUIRE(false);
+
 			else
 				parse_object(offset);
 
