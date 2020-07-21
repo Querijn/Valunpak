@@ -12,8 +12,7 @@ namespace valunpak
 	class ue4_uobject : public ue4_base
 	{
 	public:
-		bool open(ue4_uexp& a_parent, size_t& a_offset);
-		bool open(ue4_uexp& a_uexp, ue4_bin_file& a_parent, size_t& a_offset);
+		bool open(ue4_uexp& a_uexp, ue4_bin_file& a_parent, size_t& a_offset, bool a_is_element = false);
 
 		class base_property
 		{
@@ -80,13 +79,14 @@ namespace valunpak
 		enum class property_read_mode
 		{
 			default_mode,
-			array_mode
+			array_mode,
+			map_mode
 		};
 
 		read_tag_result_type read_tag(property_tag& a_tag, size_t& a_offset, property_read_mode a_read_mode, bool a_should_read = true);
 
-		bool read_struct_property(property_tag& a_tag, size_t& a_offset);
-		bool read_property(property_tag& a_tag, property_type a_type, size_t& a_offset, property_read_mode a_read_mode);
+		ue4_uobject::read_tag_result_type read_struct_property(property_tag& a_tag, size_t& a_offset);
+		ue4_uobject::read_tag_result_type read_property(property_tag& a_tag, property_type a_type, size_t& a_offset, property_read_mode a_read_mode);
 		std::unique_ptr<base_property> make_property(property_type a_type);
 
 		ue4_uexp* m_uexp = nullptr;

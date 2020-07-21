@@ -148,8 +148,7 @@ namespace valunpak
 		{
 			size_t offset = base_offset + a_offset;
 			VALUNPAK_REQUIRE(parent->get_data(a_buffer, a_size, offset));
-
-			a_offset += (offset - (base_offset + a_offset));
+			a_offset += a_size;
 			return true;
 		}
 

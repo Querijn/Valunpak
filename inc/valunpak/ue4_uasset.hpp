@@ -120,7 +120,7 @@ namespace valunpak
 		virtual bool open(const u8* a_data, size_t a_size) noexcept override;
 		virtual bool open(bin_file& a_reader, size_t& a_offset) noexcept override;
 
-		std::string get_name(size_t a_index) const;
+		bool get_name(std::string& a_string, size_t index) const;
 
 		VALUNPAK_VECTOR_GETTER(ue4_uasset, std::vector<package_export>, m_exports) exports;
 

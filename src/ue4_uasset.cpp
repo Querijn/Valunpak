@@ -2,12 +2,6 @@
 #include <valunpak/ue4_utexture2d.hpp>
 #include <valunpak/ue4_uobject.hpp>
 
-#include <cassert>
-
-#include <cstring>
-
-#include <debugbreak.h>
-
 namespace valunpak
 {
 	ue4_uasset::ue4_uasset() : exports(this) {}
@@ -68,13 +62,13 @@ namespace valunpak
 		return true;
 	}
 
-	std::string ue4_uasset::get_name(size_t index) const
+	bool ue4_uasset::get_name(std::string& a_string, size_t index) const
 	{
-		if (index < m_names.size())
-			return m_names[index];
+		if (index >= m_names.size())
+			return false;
 
-		VALUNPAK_REQUIRE(false);
-		return "";
+		a_string = m_names[index];
+		return true;
 	}
 	
 	bool ue4_uasset::package_version_header::is_valid() const
@@ -140,9 +134,7 @@ namespace valunpak
 	{
 		i32 name_index;
 		VALUNPAK_REQUIRE(a_file.read(name_index, a_offset) && a_file.read(a_number, a_offset));
-		a_name = get_name(name_index);
-
-		return true;
+		return get_name(a_name, name_index);
 	}
 }
 

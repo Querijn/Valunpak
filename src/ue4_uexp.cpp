@@ -1,6 +1,7 @@
 #include <valunpak/ue4_uexp.hpp>
 #include <valunpak/ue4_utexture2d.hpp>
 #include <valunpak/ue4_usoundwave.hpp>
+#include <valunpak/ue4_ustringtable.hpp>
 #include <valunpak/ue4_uobject.hpp>
 #include <valunpak/ue4_uasset.hpp>
 #include <valunpak/ue4_ubulk.hpp>
@@ -122,7 +123,7 @@ namespace valunpak
 			else if (*type_name == "SoundWave")
 				parse_soundwave(offset);
 			else if (*type_name == "StringTable")
-				VALUNPAK_REQUIRE(false);
+				parse_stringtable(offset);
 
 			else
 				parse_object(offset);
@@ -131,6 +132,13 @@ namespace valunpak
 		}
 
 		return true;
+	}
+
+	void ue4_uexp::parse_stringtable(size_t& a_offset)
+	{
+		auto table = std::make_unique<ue4_ustringtable>();
+		if (table->open(*this, m_ubulk, a_offset))
+			m_files.push_back(std::move(table));
 	}
 
 	void ue4_uexp::parse_soundwave(size_t& a_offset)
@@ -150,7 +158,7 @@ namespace valunpak
 	void ue4_uexp::parse_object(size_t& a_offset)
 	{
 		auto obj = std::make_unique<ue4_uobject>();
-		if (obj->open(*this, a_offset))
+		if (obj->open(*this, *this, a_offset))
 			m_files.push_back(std::move(obj));
 	}
 
