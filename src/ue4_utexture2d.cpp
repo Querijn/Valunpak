@@ -101,7 +101,7 @@ namespace valunpak
 		VALUNPAK_REQUIRE(ue4_bin_file::open(a_uexp, a_offset));
 
 		size_t offset = 0;
-		VALUNPAK_REQUIRE(m_object.open(a_uexp, offset)); // Open the UObject header
+		VALUNPAK_REQUIRE(m_object.open(a_uexp, *this, offset)); // Open the UObject header
 
 		if (read_internal(a_uexp, a_ubulk, offset) == false) // Read the texture
 		{
