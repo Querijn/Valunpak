@@ -2,8 +2,6 @@
 
 #include <limits>
 
-#include <debugbreak.h>
-
 namespace valunpak
 {
 	bool ue4_bin_file::read_fname(std::string& a_string, size_t& a_offset)
@@ -32,7 +30,6 @@ namespace valunpak
 
 		if (stored_len < 0)
 		{
-			debug_break(); // TODO: Test
 			stored_len = -stored_len;
 			a_string.resize(static_cast<size_t>(stored_len) * 2); // u16 -> u8
 			u16* data = reinterpret_cast<u16*>(a_string.data());
