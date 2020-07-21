@@ -45,6 +45,8 @@ namespace valunpak
 		template<typename T>
 		bool read_array(T* a_array, size_t a_count, size_t& a_offset) const
 		{
+			if (a_count == 0)
+				return true;
 			return read_buffer(reinterpret_cast<char*>(a_array), a_count * sizeof(T), a_offset);
 		}
 
@@ -52,7 +54,7 @@ namespace valunpak
 		bool read_array(std::vector<T>& a_vector, size_t a_count, size_t& a_offset) const
 		{
 			a_vector.resize(a_count);
-			if (read_array(a_vector.data(), a_count, a_offset)) // Use regular pointer array functionality.
+			if (a_count == 0 || read_array(a_vector.data(), a_count, a_offset)) // Use regular pointer array functionality.
 				return true;
 
 			a_vector.clear();

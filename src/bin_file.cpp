@@ -115,7 +115,7 @@ namespace valunpak
 
 			a_offset += a_size;
 			if (a_offset > get_size())
-				a_offset = a_size;
+				a_offset = get_size();
 
 			return &a_buffer != &result;
 		}
