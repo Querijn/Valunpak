@@ -12,11 +12,17 @@ namespace valunpak
 	class ue4_uobject : public ue4_base
 	{
 	public:
+		ue4_uobject();
+		~ue4_uobject();
+
 		bool open(ue4_uexp& a_uexp, ue4_bin_file& a_parent, size_t& a_offset, bool a_is_element = false);
 
 		class base_property
 		{
 		public:
+			base_property();
+			~base_property();
+
 			bool has_property_guid;
 			u32 property_guid[4] = { 0 };
 
@@ -26,6 +32,12 @@ namespace valunpak
 
 		const base_property* get_prop(const char* a_name) const noexcept;
 
+		enum class property_read_mode
+		{
+			default_mode,
+			array_mode,
+			map_mode
+		};
 	private:
 		void reset();
 		size_t read_internal(bool a_is_element);
@@ -74,13 +86,6 @@ namespace valunpak
 			i32 array_index;
 
 			base_property* prop;
-		};
-
-		enum class property_read_mode
-		{
-			default_mode,
-			array_mode,
-			map_mode
 		};
 
 		read_tag_result_type read_tag(property_tag& a_tag, size_t& a_offset, property_read_mode a_read_mode, bool a_should_read = true);

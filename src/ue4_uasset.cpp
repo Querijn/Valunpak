@@ -133,7 +133,8 @@ namespace valunpak
 	bool ue4_uasset::read_table_name(std::string& a_name, i32& a_number, bin_file& a_file, size_t& a_offset) const
 	{
 		i32 name_index;
-		VALUNPAK_REQUIRE(a_file.read(name_index, a_offset) && a_file.read(a_number, a_offset));
+		VALUNPAK_REQUIRE(a_file.read(name_index, a_offset));
+		a_file.read(a_number, a_offset);
 		return get_name(a_name, name_index);
 	}
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <debugbreak.h>
 
 namespace valunpak
@@ -42,7 +41,7 @@ namespace valunpak
 	if((exp) == false) \
 	{ \
 		printf("%s:%d -> Failed VALUNPAK_REQUIRE (%s)\n", __FILENAME__, __LINE__, #exp); \
-		debug_break(); \
+		/*debug_break();*/ \
 		return (ret); \
 	} \
 } \

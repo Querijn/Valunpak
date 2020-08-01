@@ -2,7 +2,6 @@
 #include <valunpak/ue4_ubulk.hpp>
 #include <valunpak/ue4_uexp.hpp>
 #include <valunpak/ue4_bulkdata.hpp>
-#include <valunpak/no_optimise.hpp>
 
 namespace valunpak
 {
@@ -31,7 +30,6 @@ namespace valunpak
 
 	bool ue4_ustringtable::read_internal(ue4_uexp& a_uexp, ue4_ubulk* a_bulk, size_t& a_offset)
 	{
-		size_t real_offset = get_debug_offset(a_offset);
 		std::string name_space;
 		VALUNPAK_REQUIRE(read_fstring(name_space, a_offset));
 		m_entries =

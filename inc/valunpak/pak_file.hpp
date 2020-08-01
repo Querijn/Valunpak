@@ -98,7 +98,7 @@ namespace valunpak
 				i64 size;
 				i64 uncompressed_size;
 				u32 compression_method_index;
-				u8 hash[20];
+				aes hash;
 			} header;
 
 			struct compressed_block

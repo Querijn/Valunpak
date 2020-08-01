@@ -1,9 +1,8 @@
-#include "valunpak/config.hpp"
-#include "valunpak/pak_filesystem.hpp"
-#include "valunpak/ue4_uasset.hpp"
-#include "valunpak/ue4_uexp.hpp"
+#include <valunpak/config.hpp>
+#include <valunpak/pak_filesystem.hpp>
+#include <valunpak/uasset_writer.hpp>
+#include <valunpak/simple_writer.hpp>
 
-#include <filesystem>
 #include <fstream>
 #include <chrono>
 namespace fs = std::filesystem;
@@ -16,13 +15,17 @@ namespace valunpak
 {
 	struct profiler
 	{
-		profiler(std::string_view a_name): name(a_name) { t1 = std::chrono::high_resolution_clock::now(); }
-		~profiler() 
-		{ 
+		profiler(std::string_view a_name) : name(a_name) { t1 = std::chrono::high_resolution_clock::now(); }
+		~profiler()
+		{
 			auto t2 = std::chrono::high_resolution_clock::now();
 			auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
 
-			printf("%s took %3.2f seconds\n", name.c_str(), time_span.count());
+			double count = time_span.count();
+			if (count > 0.1f)
+				printf("%s took %3.2f seconds\n", name.c_str(), count);
+			else
+				printf("%s took %3.2f milliseconds\n", name.c_str(), count * 1000);
 		}
 
 		std::string name;
@@ -56,27 +59,48 @@ namespace valunpak
 		return true;
 	}
 
+	std::vector<std::string> files_to_skip =
+	{
+		"ShooterGame/Content/Characters/_Core/DefaultAttributeValues", // Has a map property with text in it that does not conform to any other map.
+	};
+
 	bool test()
 	{
-		std::string name = "ShooterGame/Content/UI/InGame/KillBanner/Base/Assets/Base_Emblem";
-		auto uasset_pak_entry = paks.get_file(name + ".uasset");
-		VALUNPAK_REQUIRE(uasset_pak_entry.first);
+		profiler extract_profiler("Extracting");
 
-		ue4_uasset uasset_bin;
-		VALUNPAK_REQUIRE(uasset_pak_entry.first->get_file_data(*uasset_pak_entry.second, &uasset_bin));
+		bool start = false;
+		for (auto& entry : paks.entries)
+		{
+			// Get file name.
+			std::string name = entry.first.generic_string();
+			auto dot_index = name.find_last_of('.');
 
-		// Ubulk is optional
-		auto ubulk_pak_entry = paks.get_file(name + ".ubulk");
-		ue4_bin_file ubulk_bin;
-		if (ubulk_pak_entry.first != nullptr)
-			VALUNPAK_REQUIRE(ubulk_pak_entry.first->get_file_data(*ubulk_pak_entry.second, &ubulk_bin));
-
-		auto uexp_pak_entry = paks.get_file(name + ".uexp");
-		VALUNPAK_REQUIRE(uexp_pak_entry.first);
-
-		ue4_uexp uexp_bin(uasset_bin, ubulk_pak_entry.first ? &ubulk_bin : nullptr);
-		VALUNPAK_REQUIRE(uexp_pak_entry.first->get_file_data(*uexp_pak_entry.second, &uexp_bin));
-
+			if (dot_index != std::string::npos)
+			{
+				auto ext = name.substr(dot_index + 1);
+				if (ext == "uasset")
+				{
+					write_uasset(name.substr(0, dot_index), paks, files_to_skip);
+					continue;
+				}
+				else if (ext.empty() == false && ext != "ubulk" && ext != "uexp")
+				{
+					write_default_file(name, paks, files_to_skip);
+					continue;
+				}
+				else if (ext == "ubulk" || ext == "uexp")
+				{ }
+				else
+				{
+					debug_break();
+				}
+			}
+			else
+			{
+				debug_break();
+			}
+		}
+		
 		return true;
 	}
 }

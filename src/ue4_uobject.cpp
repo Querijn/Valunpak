@@ -5,7 +5,6 @@
 
 #include <debugbreak.h>
 
-#include <valunpak/no_optimise.hpp>
 namespace valunpak
 {
 	struct text : ue4_bin_file
@@ -37,22 +36,28 @@ namespace valunpak
 		};
 #pragma pack(pop)
 
-		bool open(ue4_uexp& a_uexp, ue4_bin_file& a_parent, size_t& a_offset)
+		bool open(ue4_uexp& a_uexp, ue4_bin_file& a_parent, size_t& a_offset, ue4_uobject::property_read_mode a_read_mode)
 		{
-			VALUNPAK_REQUIRE(bin_file::open(a_parent, a_offset));
+			// VALUNPAK_REQUIRE(a_read_mode != ue4_uobject::property_read_mode::map_mode); // TODO: this breaks pretty horribly, so skip it for now.
+
 			size_t offset = 0;
+			VALUNPAK_REQUIRE(bin_file::open(a_parent, a_offset));
+
 			VALUNPAK_REQUIRE(read(header, offset));
 
 			switch (header.type)
 			{
 			case history_type::base:
 			{
-				VALUNPAK_REQUIRE(read_fstring(table, offset));
+				if (a_read_mode != ue4_uobject::property_read_mode::map_mode)
+					VALUNPAK_REQUIRE(read_fstring(table, offset));
+
 				VALUNPAK_REQUIRE(read_fstring(key, offset));
 				VALUNPAK_REQUIRE(read_fstring(value, offset));
 				break;
 			}
 
+			default:
 			case history_type::none:
 				i32 has_string;
 				VALUNPAK_REQUIRE(read(has_string, offset));
@@ -67,7 +72,22 @@ namespace valunpak
 				break;
 			}
 
-			default:
+			case history_type::as_datetime:
+			{
+				u64 ticks;
+				read(ticks, offset);
+				break;
+			}
+
+			case history_type::ordered_format:
+			case history_type::argument_format:
+			case history_type::as_number:
+			case history_type::as_percent:
+			case history_type::as_currency:
+			case history_type::as_date:
+			case history_type::as_time:
+			case history_type::transform:
+			case history_type::text_generator:
 				VALUNPAK_REQUIRE(false); // TODO
 			}
 
@@ -270,6 +290,58 @@ namespace valunpak
 			float total_weight;
 		};
 
+		struct smart_name_element : base_struct_value_element
+		{
+			std::string name;
+		};
+
+		struct gameplay_tag_container_element : base_struct_value_element
+		{
+			std::vector<std::string> gameplay_tags;
+		};
+
+		struct movie_scene_frame_range_element : base_struct_value_element
+		{
+			enum range_bound_type : u8
+			{
+				exclusive,
+				inclusive,
+				open,
+			};
+			range_bound_type lower;
+			range_bound_type upper;
+		};
+		
+		struct movie_scene_float_channel_element : base_struct_value_element
+		{
+			enum class rich_curve_extrapolation : u8
+			{
+				cycle,
+				cycle_with_offset,
+				oscillate,
+				linear,
+				constant,
+				none,
+			};
+			rich_curve_extrapolation pre_infinity_extrapolation;
+			rich_curve_extrapolation post_infinity_extrapolation;
+		};
+
+		struct movie_scene_evaluation_template_element : base_struct_value_element
+		{
+			u32 value;
+		}; 
+
+		struct frame_number_element : base_struct_value_element
+		{
+			float value;
+		};
+
+		struct date_time_element : base_struct_value_element
+		{
+			i64 value;
+		};
+
 #pragma pack(pop)
 
 		struct uobject_element : base_struct_value_element
@@ -368,18 +440,20 @@ namespace valunpak
 	struct array_property : public ue4_uobject::base_property
 	{
 		std::string name;
+		std::vector<std::unique_ptr<ue4_uobject::base_property>> values;
 	};
 
 	struct set_property : public ue4_uobject::base_property
 	{
 		std::string name;
+		std::vector<std::unique_ptr<base_property>> array;
 	};
 
 	struct map_property : public ue4_uobject::base_property
 	{
 		std::string key_type;
 		std::string value_type;
-		
+		std::vector<std::pair<std::unique_ptr<ue4_uobject::base_property>, std::unique_ptr<ue4_uobject::base_property>>> map;
 	};
 
 	struct softobject_property : public ue4_uobject::base_property
@@ -395,6 +469,7 @@ namespace valunpak
 
 	struct enum_property : public ue4_uobject::base_property
 	{
+		std::string name;
 		std::string value;
 	};
 
@@ -402,6 +477,14 @@ namespace valunpak
 	{
 		std::string value;
 	};
+
+	struct interface_property : public ue4_uobject::base_property
+	{
+		u32 value;
+	};
+
+	ue4_uobject::ue4_uobject() {}
+	ue4_uobject::~ue4_uobject() {}
 
 	bool ue4_uobject::open(ue4_uexp& a_uexp, ue4_bin_file& a_parent, size_t& a_offset, bool a_is_element)
 	{
@@ -527,6 +610,14 @@ namespace valunpak
 				break;
 			}
 
+			case property_type::enum_property:
+			{
+				std::unique_ptr<enum_property> enum_prop = std::make_unique<enum_property>();
+				VALUNPAK_REQUIRE_RET(!a_should_read || m_uexp->read_table_name(enum_prop->name, *this, a_offset), read_tag_result_type::failed);
+				prop = std::move(enum_prop);
+				break;
+			}
+
 			case property_type::byte_property:
 			{
 				std::unique_ptr<byte_base_property> byte_prop;
@@ -542,9 +633,17 @@ namespace valunpak
 			}
 
 			case property_type::array_property:
+			{
+				size_t debug_offset = get_debug_offset(a_offset);
+				std::unique_ptr<array_property> array_prop = std::make_unique<array_property>();
+				VALUNPAK_REQUIRE_RET(!a_should_read || m_uexp->read_table_name(array_prop->name, *this, a_offset), read_tag_result_type::failed);
+				prop = std::move(array_prop);
+				break;
+			}
+
 			case property_type::set_property:
 			{
-				std::unique_ptr<array_property> array_prop = std::make_unique<array_property>();
+				std::unique_ptr<set_property> array_prop = std::make_unique<set_property>();
 				VALUNPAK_REQUIRE_RET(!a_should_read || m_uexp->read_table_name(array_prop->name, *this, a_offset), read_tag_result_type::failed);
 				prop = std::move(array_prop);
 				break;
@@ -567,16 +666,15 @@ namespace valunpak
 			SIMPLE_CONSTRUCT_CASE(uint16_property);
 			SIMPLE_CONSTRUCT_CASE(softobject_property);
 			SIMPLE_CONSTRUCT_CASE(str_property);
-			SIMPLE_CONSTRUCT_CASE(enum_property);
 			SIMPLE_CONSTRUCT_CASE(uint32_property);
 			SIMPLE_CONSTRUCT_CASE(uint64_property);
 			SIMPLE_CONSTRUCT_CASE(int16_property);
 			SIMPLE_CONSTRUCT_CASE(int8_property);
+			SIMPLE_CONSTRUCT_CASE(interface_property);
 
 			// These are all simple construct cases, but they also need to be added to the read_property
 			case property_type::delegate_property:
 			case property_type::double_property:
-			case property_type::interface_property:
 			{
 				size_t debug_offset = get_debug_offset(a_offset);
 				VALUNPAK_REQUIRE_RET(false, read_tag_result_type::failed); // TODO
@@ -638,6 +736,11 @@ namespace valunpak
 			default_case(vector2d, vector2d_element);
 			default_case(vector4, vector4_element);
 			default_case(per_platform_float, per_platform_float_element);
+			default_case(movie_scene_frame_range, movie_scene_frame_range_element);
+			default_case(movie_scene_float_channel, movie_scene_float_channel_element);
+			default_case(movie_scene_evaluation_template, movie_scene_evaluation_template_element);
+			default_case(frame_number, frame_number_element);
+			default_case(date_time, date_time_element);
 
 		case struct_property::type::skeletal_mesh_sampling_lod_built_data:
 		{
@@ -656,29 +759,48 @@ namespace valunpak
 			break;
 		}
 
+		case struct_property::type::smart_name:
+		{
+			auto name = std::make_unique<struct_property::smart_name_element>();
+			VALUNPAK_REQUIRE_RET(m_uexp->read_table_name(name->name, *this, a_offset), read_tag_result_type::failed);
+			prop->value = std::move(name);
+			break;
+		}
+
+		case struct_property::type::gameplay_tag_container:
+		{
+			auto container = std::make_unique<struct_property::gameplay_tag_container_element>();
+
+			i32 length;
+			size_t debug_offset = get_debug_offset(0);
+			VALUNPAK_REQUIRE_RET(read(length, a_offset), read_tag_result_type::failed);
+			for (i32 i = 0; i < length; i++)
+			{
+				std::string entry;
+				VALUNPAK_REQUIRE_RET(m_uexp->read_table_name(entry, *this, a_offset), read_tag_result_type::failed);
+				container->gameplay_tags.push_back(entry);
+			}
+
+			prop->value = std::move(container);
+			break;
+		}
+
 		case struct_property::type::unknown:
 		case struct_property::type::level_sequence_object_reference_map:
-		case struct_property::type::gameplay_tag_container:
 		case struct_property::type::nav_agent_selector:
 		case struct_property::type::box2d:
 		case struct_property::type::soft_object_path:
 		case struct_property::type::soft_class_path:
 		case struct_property::type::simple_curve_key:
-		case struct_property::type::frame_number:
-		case struct_property::type::smart_name:
 		case struct_property::type::per_platform_int:
-		case struct_property::type::date_time:
 		case struct_property::type::timespan:
 		case struct_property::type::movie_scene_track_identifier:
 		case struct_property::type::movie_scene_segment_identifier:
 		case struct_property::type::movie_scene_sequence_id:
 		case struct_property::type::movie_scene_segment:
 		case struct_property::type::section_evaluation_data_tree:
-		case struct_property::type::movie_scene_frame_range:
 		case struct_property::type::movie_scene_evaluation_key:
 		case struct_property::type::movie_scene_float_value:
-		case struct_property::type::movie_scene_float_channel:
-		case struct_property::type::movie_scene_evaluation_template:
 			VALUNPAK_REQUIRE_RET(false, read_tag_result_type::failed); // TODO
 			break;
 
@@ -734,7 +856,9 @@ namespace valunpak
 			if (a_read_mode == property_read_mode::default_mode)
 			{
 				auto prop = (byte_property*)a_tag.prop;
-				VALUNPAK_REQUIRE_RET(m_uexp->read_table_name(prop->value, *this, a_offset), read_tag_result_type::failed);
+				i32 name_index, dummy;
+				VALUNPAK_REQUIRE_RET(read(name_index, a_offset) && read(dummy, a_offset), read_tag_result_type::failed);
+				prop->value = (u8)name_index;
 			}
 			else if (a_read_mode == property_read_mode::array_mode)
 			{
@@ -760,7 +884,7 @@ namespace valunpak
 		{
 			auto prop = (text_property*)a_tag.prop;
 			text parser;
-			VALUNPAK_REQUIRE_RET(parser.open(*m_uexp, *this, a_offset), read_tag_result_type::failed);
+			VALUNPAK_REQUIRE_RET(parser.open(*m_uexp, *this, a_offset, a_read_mode), read_tag_result_type::failed);
 			prop->value = parser.value;
 			break;
 		}
@@ -768,7 +892,8 @@ namespace valunpak
 		case property_type::enum_property:
 		{
 			auto prop = (enum_property*)a_tag.prop;
-			VALUNPAK_REQUIRE_RET(m_uexp->read_table_name(prop->value, *this, a_offset), read_tag_result_type::failed);
+			size_t debug_offset = get_debug_offset(a_offset);
+			m_uexp->read_table_name(prop->value, *this, a_offset);
 			break;
 		}
 
@@ -790,13 +915,13 @@ namespace valunpak
 
 		case property_type::softobject_property:
 		{
-			size_t i = a_offset;
+			size_t start_offset = a_offset;
 			auto prop = (softobject_property*)a_tag.prop;
-			VALUNPAK_REQUIRE_RET(m_uexp->read_table_name(prop->asset_name, *this, a_offset), read_tag_result_type::failed);
-			VALUNPAK_REQUIRE_RET(read_fstring(prop->path, a_offset), read_tag_result_type::failed); // TODO: fstring_path?
+			m_uexp->read_table_name(prop->asset_name, *this, a_offset);
+			VALUNPAK_REQUIRE_RET(read_fstring(prop->path, a_offset), read_tag_result_type::failed); // TODO: FString path?
 
 			if (a_read_mode == property_read_mode::map_mode)
-				a_offset += 4;
+				a_offset += 16 - (a_offset - start_offset);
 			break;
 		}
 
@@ -816,32 +941,69 @@ namespace valunpak
 
 		case property_type::set_property:
 		{
-			size_t real_offset = get_debug_offset(a_offset);
-			VALUNPAK_REQUIRE_RET(false, read_tag_result_type::failed);
-			return read_tag_result_type::failed;
+			auto prop = (set_property*)a_tag.prop;
+			property_type value_type = (property_type)fnv(prop->name.c_str());
+
+			i32 keycount_to_remove;
+			VALUNPAK_REQUIRE_RET(read(keycount_to_remove, a_offset), read_tag_result_type::failed);
+			std::vector<std::unique_ptr<base_property>> keys_to_remove;
+			for (i32 i = 0; i < keycount_to_remove; i++)
+			{
+				keys_to_remove.push_back(make_property(value_type));
+
+				auto value_prop = keys_to_remove.back().get();
+				a_tag.prop = value_prop;
+				read_property(a_tag, value_type, a_offset, property_read_mode::array_mode);
+			}
+
+			i32 entries;
+			VALUNPAK_REQUIRE_RET(read(entries, a_offset), read_tag_result_type::failed);
+			for (i32 i = 0; i < entries; i++)
+			{
+				auto& back = prop->array.emplace_back(make_property(value_type));
+
+				auto value_prop = back.get();
+				a_tag.prop = value_prop;
+				VALUNPAK_REQUIRE_RET(read_property(a_tag, value_type, a_offset, property_read_mode::array_mode) != ue4_uobject::read_tag_result_type::failed, read_tag_result_type::failed);
+			}
+			break;
 		}
 
 		case property_type::map_property:
 		{
 			auto prop = (map_property*)a_tag.prop;
-			i32 entries;
-			VALUNPAK_REQUIRE_RET(read(entries, a_offset) && read(entries, a_offset), read_tag_result_type::failed);
-			std::vector<std::pair<std::unique_ptr<base_property>, std::unique_ptr<base_property>>> map;
-
 			property_type key_type = (property_type)fnv(prop->key_type.c_str());
 			property_type value_type = (property_type)fnv(prop->value_type.c_str());
 
-			for (i32 i = 0; i < entries; i++)
+			i32 keycount_to_remove;
+			VALUNPAK_REQUIRE_RET(read(keycount_to_remove, a_offset), read_tag_result_type::failed);
+			std::vector<std::pair<std::unique_ptr<base_property>, std::unique_ptr<base_property>>> keys_to_remove;
+			for (i32 i = 0; i < keycount_to_remove; i++)
 			{
-				map.push_back(std::make_pair(make_property(key_type), make_property(value_type)));
+				keys_to_remove.push_back(std::make_pair(make_property(key_type), make_property(value_type)));
 
-				auto key_prop = map.back().first.get();
+				auto key_prop = keys_to_remove.back().first.get();
 				a_tag.prop = key_prop;
 				read_property(a_tag, key_type, a_offset, property_read_mode::map_mode);
 
-				auto value_prop = map.back().second.get();
+				auto value_prop = keys_to_remove.back().second.get();
 				a_tag.prop = value_prop;
 				read_property(a_tag, value_type, a_offset, property_read_mode::map_mode);
+			}
+
+			i32 entries;
+			VALUNPAK_REQUIRE_RET(read(entries, a_offset), read_tag_result_type::failed);
+			for (i32 i = 0; i < entries; i++)
+			{
+				auto& back = prop->map.emplace_back(std::make_pair(make_property(key_type), make_property(value_type)));
+
+				auto key_prop = back.first.get();
+				a_tag.prop = key_prop;
+				VALUNPAK_REQUIRE_RET(read_property(a_tag, key_type, a_offset, property_read_mode::map_mode) != ue4_uobject::read_tag_result_type::failed, read_tag_result_type::failed);
+
+				auto value_prop = back.second.get();
+				a_tag.prop = value_prop;
+				VALUNPAK_REQUIRE_RET(read_property(a_tag, value_type, a_offset, property_read_mode::map_mode) != ue4_uobject::read_tag_result_type::failed, read_tag_result_type::failed);
 			}
 			break;
 		}
@@ -915,4 +1077,7 @@ namespace valunpak
 			std::to_string(a_guid.num[3])
 			);
 	}
+	
+	ue4_uobject::base_property::base_property() {}
+	ue4_uobject::base_property::~base_property() {}
 }

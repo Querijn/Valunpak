@@ -2,6 +2,8 @@
 #include <valunpak/ue4_utexture2d.hpp>
 #include <valunpak/ue4_usoundwave.hpp>
 #include <valunpak/ue4_ustringtable.hpp>
+#include <valunpak/ue4_ucurvetable.hpp>
+#include <valunpak/ue4_udatatable.hpp>
 #include <valunpak/ue4_uobject.hpp>
 #include <valunpak/ue4_uasset.hpp>
 #include <valunpak/ue4_ubulk.hpp>
@@ -97,7 +99,6 @@ namespace valunpak
 		{
 			size_t offset = exp.serial_offset - m_uasset->header_size;
 			size_t start_offset = offset;
-			VALUNPAK_REQUIRE(exp.class_index != 0);
 
 			// Indicate file type
 			const std::string* type_name = nullptr;
@@ -106,27 +107,41 @@ namespace valunpak
 				type_name = &m_uasset->m_names[m_uasset->m_exports[exp.class_index].name_index];
 			else if (exp.class_index.is_import())
 				type_name = &m_uasset->m_imports[exp.class_index].object_name;
-			else 
+			else
 				return false;
 
-			if (*type_name == "" || *type_name == "ObjectProperty")
+			switch (fnv(type_name->c_str()))
+			{
+			default:
+			case fnv(""):
+			case fnv("ObjectProperty"):
 				parse_object(offset);
-			else if (*type_name == "Texture2D")
+				break;
+
+			case fnv("Texture2D"):
 				parse_texture(offset);
+				break;
 
-			else if (*type_name == "CurveTable")
+			case fnv("CurveTable"):
+				parse_curvetable(offset);
+				break;
+
+			case fnv("DataTable"):
+				parse_datatable(offset);
+				break;
+
+			case fnv("FontFace"):
 				VALUNPAK_REQUIRE(false);
-			else if (*type_name == "DataTable")
-				VALUNPAK_REQUIRE(false);
-			else if (*type_name == "FontFace")
-				VALUNPAK_REQUIRE(false);
-			else if (*type_name == "SoundWave")
+				break;
+
+			case fnv("SoundWave"):
 				parse_soundwave(offset);
-			else if (*type_name == "StringTable")
-				parse_stringtable(offset);
+				break;
 
-			else
-				parse_object(offset);
+			case fnv("StringTable"):
+				parse_stringtable(offset);
+				break;
+			}
 
 			// VALUNPAK_REQUIRE(start_offset + exp.serial_size == offset);
 		}
@@ -141,11 +156,25 @@ namespace valunpak
 			m_files.push_back(std::move(table));
 	}
 
+	void ue4_uexp::parse_curvetable(size_t& a_offset)
+	{
+		auto table = std::make_unique<ue4_ucurvetable>();
+		if (table->open(*this, m_ubulk, a_offset))
+			m_files.push_back(std::move(table));
+	}
+
+	void ue4_uexp::parse_datatable(size_t& a_offset)
+	{
+		auto table = std::make_unique<ue4_udatatable>();
+		if (table->open(*this, m_ubulk, a_offset))
+			m_files.push_back(std::move(table));
+	}
+
 	void ue4_uexp::parse_soundwave(size_t& a_offset)
 	{
-		auto texture = std::make_unique<ue4_usoundwave>();
-		if (texture->open(*this, m_ubulk, a_offset))
-			m_files.push_back(std::move(texture));
+		auto wave = std::make_unique<ue4_usoundwave>();
+		if (wave->open(*this, m_ubulk, a_offset))
+			m_files.push_back(std::move(wave));
 	}
 
 	void ue4_uexp::parse_texture(size_t& a_offset)

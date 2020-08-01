@@ -32,6 +32,8 @@ namespace valunpak
 		friend class ue4_utexture2d;
 		friend class ue4_usoundwave;
 		friend class ue4_ustringtable;
+		friend class ue4_ucurvetable;
+		friend class ue4_udatatable;
 		friend class text;
 	private:
 		ue4_uasset* m_uasset = nullptr;
@@ -45,6 +47,8 @@ namespace valunpak
 		void parse_object(size_t& a_offset);
 		void parse_soundwave(size_t& a_offset);
 		void parse_stringtable(size_t& a_offset);
+		void parse_curvetable(size_t& a_offset);
+		void parse_datatable(size_t& a_offset);
 
 		bool read_table_name(std::string& a_name, bin_file& a_file, size_t& a_offset) const;
 		bool read_table_name(std::string& a_name, i32& a_number, bin_file& a_file, size_t& a_offset) const;

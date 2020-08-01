@@ -244,12 +244,7 @@ namespace valunpak
 	size_t pak_file::get_file_size(const pak_file::entry& a_entry) const
 	{
 		if (a_entry.header.compression_method_index == 0)
-		{
-			if (has_flag<entry::flag_type::encrypted>(a_entry.flags) == false)
-				return a_entry.header.uncompressed_size;
-
-			return (a_entry.header.size & 15) == 0 ? a_entry.header.size : (a_entry.header.size / 16 + 1) * 16;
-		}
+			return a_entry.header.uncompressed_size;
 
 		debug_break(); // TODO: implement
 		return 0;
@@ -271,11 +266,14 @@ namespace valunpak
 				return true;
 			}
 
-			read_array(a_buffer, data_size, offset);
+			size_t full_size = (a_entry.header.size & 15) == 0 ? a_entry.header.size : (a_entry.header.size / 16 + 1) * 16;
+			std::vector<u8> intermediate_buffer(full_size);
+			memset(intermediate_buffer.data(), 0, full_size);
+			read_array(intermediate_buffer.data(), full_size, offset);
 			for (auto& key : pak_filesystem::keys)
 			{
-				debug_break(); // TODO: Validate and test
-				key->decrypt(a_buffer, data_size);
+				key->decrypt(intermediate_buffer.data(), full_size);
+				memcpy(a_buffer, intermediate_buffer.data(), data_size);
 				return true;
 			}
 		}

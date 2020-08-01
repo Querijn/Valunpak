@@ -12,6 +12,7 @@ public: \
 	const vector_type::value_type& operator[](size_t a_index) const { return m_parent->vector_name[a_index]; } \
 \
 	size_t size() const { return m_parent->vector_name.size(); } \
+	bool empty() const { return m_parent->vector_name.empty(); } \
 private: \
 	parent_type* m_parent; \
 }

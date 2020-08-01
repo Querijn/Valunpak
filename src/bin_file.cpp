@@ -111,12 +111,14 @@ namespace valunpak
 		{
 			VALUNPAK_REQUIRE(a_buffer);
 			u8* source = data.data() + a_offset;
+
+			size_t read_end = a_offset + a_size;
+			size_t actual_end = get_size();
+			VALUNPAK_REQUIRE(read_end <= actual_end);
+
 			u8* result = (u8*)memcpy(a_buffer, source, a_size);
 
 			a_offset += a_size;
-			if (a_offset > get_size())
-				a_offset = get_size();
-
 			return &a_buffer != &result;
 		}
 

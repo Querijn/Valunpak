@@ -37,6 +37,21 @@ namespace valunpak
 		}
 
 		std::vector<char> buffer(stored_len);
+
+		// Sometimes we exceed the storage size, giving us garbage, so we test the waters before we go in.
+		if (u8 test_byte; read(test_byte, a_offset) && test_byte == '\0')
+		{
+			buffer[0] == '\0';
+			a_offset += stored_len;
+			if (a_offset > get_size())
+				a_offset = get_size();
+			return true;
+		}
+		else
+		{
+			a_offset--;
+		}
+
 		if (read_buffer(buffer.data(), stored_len, a_offset) == false)
 			return false;
 

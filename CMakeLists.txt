@@ -19,7 +19,6 @@ ADD_SRC(Crypto\\AES					"inc/valunpak/aes.hpp"					"src/aes.cpp")
 ADD_SRC(Crypto\\FNV1				"inc/valunpak/fnv1.hpp"					"src/fnv1.cpp")
 
 # Utility 
-ADD_SRC(Utility\\Json				"inc/valunpak/json_writer.hpp"			"src/json_writer.cpp")
 ADD_SRC(Utility\\VectorGetter		"inc/valunpak/vector_getter.hpp"		"")
 ADD_SRC(Utility\\DXT				"ext/s3tc/s3tc.h"						"ext/s3tc/s3tc.cpp")
 
@@ -31,6 +30,8 @@ ADD_SRC(Unreal\\Uobject				"inc/valunpak/ue4_uobject.hpp"			"src/ue4_uobject.cpp
 ADD_SRC(Unreal\\UTexture2D			"inc/valunpak/ue4_utexture2d.hpp"		"src/ue4_utexture2d.cpp")
 ADD_SRC(Unreal\\USoundWave			"inc/valunpak/ue4_usoundwave.hpp"		"src/ue4_usoundwave.cpp")
 ADD_SRC(Unreal\\UStringTable		"inc/valunpak/ue4_ustringtable.hpp"		"src/ue4_ustringtable.cpp")
+ADD_SRC(Unreal\\UDataTable			"inc/valunpak/ue4_udatatable.hpp"		"src/ue4_udatatable.cpp")
+ADD_SRC(Unreal\\UCurveTable			"inc/valunpak/ue4_ucurvetable.hpp"		"src/ue4_ucurvetable.cpp")
 ADD_SRC(Unreal\\UExp				"inc/valunpak/ue4_uexp.hpp"				"src/ue4_uexp.cpp")
 ADD_SRC(Unreal\\UBulk				"inc/valunpak/ue4_ubulk.hpp"			"src/ue4_ubulk.cpp")
 ADD_SRC(Unreal\\BulkData			"inc/valunpak/ue4_bulkdata.hpp"			"src/ue4_bulkdata.cpp")
@@ -40,6 +41,12 @@ ADD_SRC(BinFile						"inc/valunpak/bin_file.hpp"				"src/bin_file.cpp")
 ADD_SRC(SigFile						"inc/valunpak/sig_file.hpp"				"src/sig_file.cpp")
 ADD_SRC(Pak\\File					"inc/valunpak/pak_file.hpp"				"src/pak_file.cpp")
 ADD_SRC(Pak\\FS						"inc/valunpak/pak_filesystem.hpp"		"src/pak_filesystem.cpp")
+
+# Writers
+ADD_SRC(Writers\\Json				"inc/valunpak/json_writer.hpp"			"src/json_writer.cpp")
+ADD_SRC(Writers\\Image				"inc/valunpak/image_writer.hpp"			"src/image_writer.cpp")
+ADD_SRC(Writers\\Uasset				"inc/valunpak/uasset_writer.hpp"		"src/uasset_writer.cpp")
+ADD_SRC(Writers\\Simple				"inc/valunpak/simple_writer.hpp"		"src/simple_writer.cpp")
 
 ADD_SRC(App							"inc/valunpak/config.hpp"				"src/main.cpp")
 
